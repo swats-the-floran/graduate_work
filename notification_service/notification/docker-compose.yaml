@@ -1,0 +1,85 @@
+version: "3.8"
+volumes:
+  notification_db:
+  static:
+  n_rabbitmq:
+  n_log_rabbitmq:
+services:
+
+  db:
+    image: postgres:14-alpine
+    container_name: ${PROJECT_SLUG}_db
+    restart: always
+    volumes:
+      - notification_db:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=123qwe
+      - POSTGRES_DB=notification_db
+
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ${PROJECT_SLUG}_rabbitmq
+    restart: always
+    volumes:
+      - n_rabbitmq:/var/lib/rabbitmq/
+      - n_log_rabbitmq:/var/log/rabbitmq
+
+
+  notification_app:
+    build: .
+    image: &notification_app notification_app
+    container_name: ${PROJECT_SLUG}_app
+    restart: on-failure
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - ./app:/app
+      - static:/app/static
+
+  celery-worker:
+    container_name: ${PROJECT_SLUG}_worker
+    build: .
+    image: *notification_app
+    command: >-
+      celery -A config.celery:app worker --loglevel=INFO -c "8" -Ofair -E
+      -Q default
+    volumes:
+      - ./app:/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    depends_on:
+      - db
+      - rabbitmq
+      - notification_app
+
+  celerybeat:
+    container_name: ${PROJECT_SLUG}_beat
+    image: *notification_app
+    command: >-
+      celery -A config.celery:app beat --loglevel=INFO
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    depends_on:
+      - db
+      - rabbitmq
+      - notification_app
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "1337:80"
+    volumes:
+      - static:/conf/static
+    depends_on:
+      - notification_app

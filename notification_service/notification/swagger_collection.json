@@ -1,0 +1,419 @@
+{
+	"info": {
+		"_postman_id": "4f956047-031a-4c67-9964-19a192a1c072",
+		"name": "Notifications API",
+		"description": "Микросервис отправки уведомлений\n\nContact Support:\n Email: test@practicum.ru",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "birthday create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"<email>\",\n  \"first_name\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"last_name\": \"<string>\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/birthday/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"birthday",
+						""
+					]
+				},
+				"description": "Письмо поздравление"
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": "Added as a part of security scheme: basic",
+								"key": "Authorization",
+								"value": "Basic <credentials>"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/birthday/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"birthday",
+								""
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"email\": \"<email>\",\n  \"first_name\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"last_name\": \"<string>\"\n}"
+				}
+			]
+		},
+		{
+			"name": "bookmarks create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"movies\": [\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    },\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/bookmarks/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"bookmarks",
+						""
+					]
+				},
+				"description": "Закладки"
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": "Added as a part of security scheme: basic",
+								"key": "Authorization",
+								"value": "Basic <credentials>"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"movies\": [\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    },\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bookmarks/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookmarks",
+								""
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"movies\": [\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    },\n    {\n      \"movie_name\": \"<string>\",\n      \"imdb_rating\": \"<decimal>\",\n      \"movie_link\": \"<uri>\",\n      \"movie_description\": \"<string>\"\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "likes create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"link\": \"<uri>\",\n  \"count\": \"<integer>\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/likes/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"likes",
+						""
+					]
+				},
+				"description": "Лайки."
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": "Added as a part of security scheme: basic",
+								"key": "Authorization",
+								"value": "Basic <credentials>"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"link\": \"<uri>\",\n  \"count\": \"<integer>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/likes/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"likes",
+								""
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"receiver\": {\n    \"email\": \"<email>\",\n    \"first_name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"last_name\": \"<string>\"\n  },\n  \"link\": \"<uri>\",\n  \"count\": \"<integer>\"\n}"
+				}
+			]
+		},
+		{
+			"name": "new movie create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"receivers\": [\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    },\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    }\n  ],\n  \"movie_name\": \"<string>\",\n  \"imdb_rating\": \"<decimal>\",\n  \"movie_link\": \"<uri>\",\n  \"movie_description\": \"<string>\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/new_movie/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"new_movie",
+						""
+					]
+				},
+				"description": "Новый фильм"
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": "Added as a part of security scheme: basic",
+								"key": "Authorization",
+								"value": "Basic <credentials>"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"receivers\": [\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    },\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    }\n  ],\n  \"movie_name\": \"<string>\",\n  \"imdb_rating\": \"<decimal>\",\n  \"movie_link\": \"<uri>\",\n  \"movie_description\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/new_movie/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"new_movie",
+								""
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"receivers\": [\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    },\n    {\n      \"email\": \"<email>\",\n      \"first_name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"last_name\": \"<string>\"\n    }\n  ],\n  \"movie_name\": \"<string>\",\n  \"imdb_rating\": \"<decimal>\",\n  \"movie_link\": \"<uri>\",\n  \"movie_description\": \"<string>\"\n}"
+				}
+			]
+		},
+		{
+			"name": "welcome create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"<email>\",\n  \"first_name\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"last_name\": \"<string>\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/welcome/",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"welcome",
+						""
+					]
+				},
+				"description": "Приветственное письмо."
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": "Added as a part of security scheme: basic",
+								"key": "Authorization",
+								"value": "Basic <credentials>"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/welcome/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"welcome",
+								""
+							]
+						}
+					},
+					"status": "Created",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n  \"email\": \"<email>\",\n  \"first_name\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"last_name\": \"<string>\"\n}"
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "<Basic Auth Username>",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "<Basic Auth Password>",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api/v1/notify",
+			"type": "string"
+		}
+	]
+}

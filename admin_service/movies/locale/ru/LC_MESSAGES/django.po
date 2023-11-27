@@ -1,0 +1,77 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE"S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-25 18:14+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: movies/apps.py:8
+msgid "Movies"
+msgstr "Фильмы"
+
+#: movies/models.py:24
+msgid "name"
+msgstr "Наименование"
+
+#: movies/models.py:25 movies/models.py:43
+msgid "description"
+msgstr "Описание"
+
+#: movies/models.py:39
+msgid "movie"
+msgstr "Фильм"
+
+#: movies/models.py:40
+msgid "tv_show"
+msgstr "Сериал"
+
+#: movies/models.py:42
+msgid "title"
+msgstr "Название"
+
+#: movies/models.py:44
+msgid "creation date"
+msgstr "Дата создания"
+
+#: movies/models.py:45
+msgid "rating"
+msgstr "Рейтинг"
+
+#: movies/models.py:48
+msgid "type"
+msgstr "Тип"
+
+#: movies/models.py:73
+msgid "full name"
+msgstr "Полное имя"
+
+#: movies/models.py:88
+msgid "actor"
+msgstr "Актер"
+
+#: movies/models.py:89
+msgid "director"
+msgstr "Режиссёр"
+
+#: movies/models.py:90
+msgid "writer"
+msgstr "Сценарист"
+
+#: movies/models.py:94
+msgid "role"
+msgstr "Роль"

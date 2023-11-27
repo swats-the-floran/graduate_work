@@ -1,0 +1,69 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.0.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  clickhouse-node1:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node1
+    hostname: clickhouse-node1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./configs_clickhouse/node1:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+
+  clickhouse-node2:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node2
+    hostname: clickhouse-node2
+    volumes:
+      - ./configs_clickhouse/node2:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+  
+  clickhouse-node3:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node3
+    hostname: clickhouse-node3
+    volumes:
+      - ./configs_clickhouse/node3:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+  
+  clickhouse-node4:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node4
+    hostname: clickhouse-node4
+    volumes:
+      - ./configs_clickhouse/node4:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+  
+  clickhouse-node5:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node5
+    hostname: clickhouse-node5
+    volumes:
+      - ./configs_clickhouse/node4:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+  
+  clickhouse-node6:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node6
+    hostname: clickhouse-node6
+    volumes:
+      - ./configs_clickhouse/node4:/etc/clickhouse-server
+    depends_on:
+      - zookeeper
+

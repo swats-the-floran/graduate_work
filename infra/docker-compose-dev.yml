@@ -1,0 +1,193 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:13.0-alpine
+    container_name: db
+    restart: always
+    user: ${POSTGRES_USER}
+    expose:
+      - "5432"
+    volumes:
+      - data_volume:/var/lib/postgresql/data/
+      - ../psql/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - vidim
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - vidim
+    ports:
+      - 6379:6379
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    networks:
+      - vidim
+    ports:
+    - "8081:8081"
+
+  jaeger-service:
+    container_name: 'jaeger'
+    image: jaegertracing/all-in-one:latest
+    networks:
+      - vidim
+    ports:
+      - "16686:16686"
+    depends_on:
+      - auth_service
+
+  nginx:
+    image: nginx:1.19.3
+    container_name: 'nginx'
+    restart: always
+    networks:
+      - vidim
+    ports:
+      - ${PUBLISHED_NGINX_PORT}:80
+      - ${PUBLISHED_NGINX_PORT_SECURED}:443
+    volumes:
+      - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./etc/nginx/conf.d:/etc/nginx/conf.d:ro
+#      - ../static:/usr/share/nginx/html/static/
+      - ../data:/data/:ro
+      - static_volume:/opt/app/static/
+      - media_volume:/opt/app/media/
+    environment:
+      NGINX_SET_REAL_IP_FROM: "192.168.1.0/24"
+    depends_on:
+      - auth_service
+      - jaeger-service
+      - admin_service
+      - film_service
+
+  auth_service:
+    build: ../auth_service/
+    container_name: 'auth_service'
+    restart: always
+    volumes:
+      - ../static:/opt/src/static
+      - ../templates/:/opt/src/templates
+#    healthcheck:
+#      test: curl -s ${DOCS_URL} >/dev/null || exit 1
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vidim
+    ports:
+      - ${PUBLISHED_UNICORN_PORT}:${INNER_UVICORN_PORT}
+    env_file:
+      - .env
+
+  admin_service:
+    build: ../admin_service/
+    container_name: admin_service
+    volumes:
+      - static_volume:/opt/app/static/
+      - media_volume:/opt/app/media/
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8000"
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  elasticsearch:
+    image: elasticsearch:8.6.2
+    container_name: elasticsearch
+    restart: always
+    volumes:
+      - elasticsearch_data:/opt/elasticsearch/data
+    networks:
+      - vidim
+    expose:
+      - "9200"
+    ports:
+      - 9200:9200
+    env_file:
+      - .env
+
+
+  etl-service:
+    build: ../psql_to_es/
+    container_name: etl-service
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - vidim
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+
+  film_service:
+    build:
+      context: ../film_service/
+      target: production
+    container_name: film_service
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8888"
+    ports:
+      - 8888:8888
+    depends_on:
+      elasticsearch:
+        condition: service_started
+      redis:
+        condition: service_started
+
+volumes:
+  data_volume:
+  redis_data:
+  static:
+  static_volume:
+  media_volume:
+  elasticsearch_data:
+
+networks:
+  vidim:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450

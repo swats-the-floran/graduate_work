@@ -1,0 +1,878 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:13.0-alpine
+    container_name: db
+    restart: always
+    user: ${POSTGRES_USER}
+    expose:
+      - "5432"
+    volumes:
+      - data_volume:/var/lib/postgresql/data/
+      - ../psql/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - vidim
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: postgres
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - vidim
+    ports:
+      - 6379:6379
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: redis
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    networks:
+      - vidim
+    ports:
+    - "8081:8081"
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: redis-commander
+
+  jaeger-service:
+    container_name: 'jaeger'
+    image: jaegertracing/all-in-one:latest
+    networks:
+      - vidim
+    ports:
+      - "16686:16686"
+    depends_on:
+      - auth_service
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: jaeger
+
+  nginx:
+    image: nginx:1.19.3
+    container_name: 'nginx'
+    restart: always
+    networks:
+      - vidim
+    ports:
+      - ${PUBLISHED_NGINX_PORT}:80
+      - ${PUBLISHED_NGINX_PORT_SECURED}:443
+    volumes:
+      - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./etc/nginx/conf.d:/etc/nginx/conf.d:ro
+#      - ../static:/usr/share/nginx/html/static/
+      - ../data:/data/:ro
+      - static_volume:/opt/app/static/
+      - media_volume:/opt/app/media/
+      - /tmp/logs/nginx/:/var/log/nginx/
+    depends_on:
+      - auth_service
+      - jaeger-service
+      - admin_service
+      - film_service
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: nginx
+    environment:
+      NGINX_SET_REAL_IP_FROM: "192.168.1.0/24"
+
+  auth_service:
+    build: ../auth_service/
+    container_name: 'auth_service'
+    restart: always
+    volumes:
+      - ../static:/opt/src/static
+      - ../templates/:/opt/src/templates
+#    healthcheck:
+#      test: curl -s ${DOCS_URL} >/dev/null || exit 1
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+    depends_on:
+      - db
+      - redis
+    networks:
+      - vidim
+    ports:
+      - ${PUBLISHED_UNICORN_PORT}:${INNER_UVICORN_PORT}
+    env_file:
+      - .env
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: auth_api
+
+  admin_service:
+    build: ../admin_service/
+    container_name: admin_service
+    volumes:
+      - static_volume:/opt/app/static/
+      - media_volume:/opt/app/media/
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8000"
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: admin
+
+  etl-service:
+    build: ../psql_to_es/
+    container_name: etl-service
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - vidim
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: etl_es
+
+  film_service:
+    build:
+      context: ../film_service/
+      target: production
+    container_name: film_service
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8888"
+    ports:
+      - 8888:8888
+    depends_on:
+      elasticsearch:
+        condition: service_started
+      redis:
+        condition: service_started
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: film_api
+
+##############################################################################
+#                             UGC services
+##############################################################################
+
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:6.0.1
+  #   hostname: zookeeper
+  #   container_name: zookeeper
+  #   ports:
+  #     - "2181:2181"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_TICK_TIME: 2000
+  #
+  # broker:
+  #   image: confluentinc/cp-server:6.0.1
+  #   hostname: broker
+  #   container_name: broker
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - "9092:9092"
+  #     - "9101:9101"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+  #     KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+  #     KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+  #     KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  #     KAFKA_JMX_PORT: 9101
+  #     KAFKA_JMX_HOSTNAME: localhost
+  #     KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  #     CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+  #     CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+  #     CONFLUENT_METRICS_ENABLE: 'true'
+  #     CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+  #
+  # schema-registry:
+  #   image: confluentinc/cp-schema-registry:6.0.1
+  #   hostname: schema-registry
+  #   container_name: schema-registry
+  #   depends_on:
+  #     - broker
+  #   # ports:
+  #   #   - "8081:8081"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     SCHEMA_REGISTRY_HOST_NAME: schema-registry
+  #     SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+  #     SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+  #
+  # connect:
+  #   image: cnfldemos/cp-server-connect-datagen:0.4.0-6.0.1
+  #   hostname: connect
+  #   container_name: connect
+  #   depends_on:
+  #     - broker
+  #     - schema-registry
+  #   ports:
+  #     - "8083:8083"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
+  #     CONNECT_REST_ADVERTISED_HOST_NAME: connect
+  #     CONNECT_REST_PORT: 8083
+  #     CONNECT_GROUP_ID: compose-connect-group
+  #     CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+  #     CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+  #     CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+  #     CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+  #     CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+  #     CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+  #     CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+  #     CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+  #     CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+  #     CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  #     # CLASSPATH required due to CC-2422
+  #     CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-6.0.1.jar
+  #     CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+  #     CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+  #     CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+  #     CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+  #
+  # control-center:
+  #   image: confluentinc/cp-enterprise-control-center:6.0.1
+  #   hostname: control-center
+  #   container_name: control-center
+  #   depends_on:
+  #     - broker
+  #     - schema-registry
+  #     - connect
+  #     - ksqldb-server
+  #   ports:
+  #     - "9021:9021"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+  #     CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
+  #     CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
+  #     CONTROL_CENTER_KSQL_KSQLDB1_ADVERTISED_URL: "http://localhost:8088"
+  #     CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
+  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+  #     CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+  #     PORT: 9021
+  #
+  # ksqldb-server:
+  #   image: confluentinc/cp-ksqldb-server:6.0.1
+  #   hostname: ksqldb-server
+  #   container_name: ksqldb-server
+  #   depends_on:
+  #     - broker
+  #     - connect
+  #   ports:
+  #     - "8088:8088"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     KSQL_CONFIG_DIR: "/etc/ksql"
+  #     KSQL_BOOTSTRAP_SERVERS: "broker:29092"
+  #     KSQL_HOST_NAME: ksqldb-server
+  #     KSQL_LISTENERS: "http://0.0.0.0:8088"
+  #     KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+  #     KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+  #     KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+  #     KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+  #     KSQL_KSQL_CONNECT_URL: "http://connect:8083"
+  #     KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
+  #     KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
+  #     KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+  #
+  # ksqldb-cli:
+  #   image: confluentinc/cp-ksqldb-cli:6.0.1
+  #   container_name: ksqldb-cli
+  #   depends_on:
+  #     - broker
+  #     - connect
+  #     - ksqldb-server
+  #   entrypoint: /bin/sh
+  #   tty: true
+  #   networks:
+  #     - vidim
+  #
+  # ksql-datagen:
+  #   image: confluentinc/ksqldb-examples:6.0.1
+  #   hostname: ksql-datagen
+  #   container_name: ksql-datagen
+  #   depends_on:
+  #     - ksqldb-server
+  #     - broker
+  #     - schema-registry
+  #     - connect
+  #   command: "bash -c 'echo Waiting for Kafka to be ready... && \
+  #                      cub kafka-ready -b broker:29092 1 40 && \
+  #                      echo Waiting for Confluent Schema Registry to be ready... && \
+  #                      cub sr-ready schema-registry 8081 40 && \
+  #                      echo Waiting a few seconds for topic creation to finish... && \
+  #                      sleep 11 && \
+  #                      tail -f /dev/null'"
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     KSQL_CONFIG_DIR: "/etc/ksql"
+  #     STREAMS_BOOTSTRAP_SERVERS: broker:29092
+  #     STREAMS_SCHEMA_REGISTRY_HOST: schema-registry
+  #     STREAMS_SCHEMA_REGISTRY_PORT: 8081
+  #
+  # rest-proxy:
+  #   image: confluentinc/cp-kafka-rest:6.0.1
+  #   depends_on:
+  #     - broker
+  #     - schema-registry
+  #   ports:
+  #     - 8082:8082
+  #   hostname: rest-proxy
+  #   container_name: rest-proxy
+  #   networks:
+  #     - vidim
+  #   environment:
+  #     KAFKA_REST_HOST_NAME: rest-proxy
+  #     KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:29092'
+  #     KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+  #     KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+  #
+  # clickhouse-node1:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node1
+  #   hostname: clickhouse-node1
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - "8123:8123"
+  #     - "9000:9000"
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node1:/etc/clickhouse-server
+  #   networks:
+  #     - vidim
+  #
+  # clickhouse-node2:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node2
+  #   hostname: clickhouse-node2
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node2:/etc/clickhouse-server
+  #   depends_on:
+  #     - zookeeper
+  #   networks:
+  #     - vidim
+  #
+  # clickhouse-node3:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node3
+  #   hostname: clickhouse-node3
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node3:/etc/clickhouse-server
+  #   depends_on:
+  #     - zookeeper
+  #   networks:
+  #     - vidim
+  #
+  # clickhouse-node4:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node4
+  #   hostname: clickhouse-node4
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node4:/etc/clickhouse-server
+  #   depends_on:
+  #     - zookeeper
+  #   networks:
+  #     - vidim
+  #
+  # clickhouse-node5:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node5
+  #   hostname: clickhouse-node5
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node5:/etc/clickhouse-server
+  #   depends_on:
+  #     - zookeeper
+  #   networks:
+  #     - vidim
+  #
+  # clickhouse-node6:
+  #   image: yandex/clickhouse-server:20.4
+  #   container_name: clickhouse-node6
+  #   hostname: clickhouse-node6
+  #   volumes:
+  #     - ../ugc_etl/configs_clickhouse/node6:/etc/clickhouse-server
+  #   depends_on:
+  #     - zookeeper
+  #   networks:
+  #     - vidim
+  #
+  # kafka-clickhouse-etl:
+  #   build: 
+  #     context: ../ugc_etl/
+  #     dockerfile: Dockerfile
+  #   container_name: kafka-clickhouse-etl
+  #   hostname: kafka-clickhouse-etl
+  #   depends_on:
+  #     - clickhouse-node1
+  #     - broker
+  #   restart: unless-stopped
+  #   networks:
+  #     - vidim
+
+  mongors1n1:
+    container_name: mongors1n1
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27017:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data1:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+  mongors1n2:
+    container_name: mongors1n2
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27027:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data2:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+  mongors1n3:
+    container_name: mongors1n3
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+    ports:
+      - 27037:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data3:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+  mongors2n1:
+    container_name: mongors2n1
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27047:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data4:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+  mongors2n2:
+    container_name: mongors2n2
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27057:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data5:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+  mongors2n3:
+    container_name: mongors2n3
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
+    ports:
+      - 27067:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/data6:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo
+
+
+  mongocfg1:
+    container_name: mongocfg1
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config1:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo-config
+
+  mongocfg2:
+    container_name: mongocfg2
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config2:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo-config
+
+  mongocfg3:
+    container_name: mongocfg3
+    image: mongo
+    networks:
+      - vidim
+    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tmp/mongo_cluster/config3:/data/db
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo-config
+
+
+  mongos1:
+    image: mongo
+    container_name: mongos1
+    hostname: mongos1
+    networks:
+      - vidim
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip_all
+    ports:
+      - 27019:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo-router
+  
+  mongos2:
+    image: mongo
+    container_name: mongos2
+    hostname: mongos2
+    networks:
+      - vidim
+    depends_on:
+      - mongocfg1
+      - mongocfg2
+      - mongocfg3
+    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017 --bind_ip_all
+    ports:
+      - 27020:27017
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: mongo-router
+
+
+  ugc_service:
+    build:
+      context: ../ugc_service/
+      target: production
+    container_name: ugc_service
+    hostname: ugc_sevice
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8889"
+    ports:
+      - 8889:8889
+    depends_on:
+      - mongos1
+      - mongos2
+    restart: unless-stopped
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: ugc_api
+
+##############################################################################
+#                             ELK services
+##############################################################################
+
+  elasticsearch:
+    image: elasticsearch:8.6.2
+    container_name: elasticsearch
+    volumes:
+      - elasticsearch_data:/opt/elasticsearch/data
+    expose:
+      - "9200"
+    ports:
+      - 9200:9200
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - vidim
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: elk_elasticsearch
+    environment:
+      - cluster.routing.allocation.disk.threshold_enabled=false
+
+  kibana:
+    image: kibana:8.6.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: always
+    networks:
+      - vidim
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: elk_kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+
+  logstash:
+    image: logstash:8.6.2
+    ports:
+      - "5044:5044/udp"
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./etc/ELK_service/logstash.conf:/config/logstash.conf:ro
+      - /tmp/logs/nginx/:/var/log/nginx/:ro
+    command: logstash -f /config/logstash.conf
+    restart: always
+    networks:
+      - vidim
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: elk_logstash
+    environment:
+      XPACK_MONITORING_ENABLED: "false"
+      ES_HOST: "elasticsearch:9200"
+
+  # no reason to use this layer here
+  # filebeat:
+  #   image: elastic/filebeat:8.6.2
+  #   volumes:
+  #     - /tmp/logs/nginx:/var/log/nginx:ro
+  #     - ./etc/ELK_service/filebeat.yml:/usr/share/filebeat/filebeat.yml
+  #   depends_on:
+  #     - nginx
+  #     - logstash
+  #     - elasticsearch
+  #     - kibana
+  #   links:
+  #     - logstash
+  #   networks:
+  #     - vidim
+  #   logging:
+  #     driver: gelf
+  #     options:
+  #       gelf-address: udp://127.0.0.1:5044
+  #       tag: filebeat
+
+##############################################################################
+#                         NOTIFICACTION services
+##############################################################################
+
+  # rabbitmq:
+  #   container_name: yp_rabbitmq
+  #   image: "rabbitmq:3-management"
+  #   ports:
+  #     - "15672:15672"
+  #     - "5672:5672"
+  #   networks:
+  #     - vidim
+  #
+  # celery:
+  #   container_name: yp_celery
+  #   build:
+  #     context: ../notification_service
+  #     dockerfile: celery.dockerfile
+  #   depends_on:
+  #     - notification_service
+  #     - rabbitmq
+  #   volumes:
+  #     - ../notification_service:/opt/app
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - vidim
+  #
+  # notification_service:
+  #   container_name: yp_notification_service
+  #   build:
+  #     context: ../notification_service
+  #     dockerfile: web.dockerfile
+  #   ports:
+  #     - "8001:8000"
+  #   volumes:
+  #     - ../notification_service:/opt/app
+  #     - static_dir:/opt/app/static/
+  #     - media_dir:/opt/app/media/
+  #   environment:
+  #     - DB_HOST=db
+  #     - RABBITMQ_URL=${RABBITMQ_URL}
+  #   depends_on:
+  #     - rabbitmq
+  #     - db
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - vidim
+
+volumes:
+  data_volume:
+  redis_data:
+  static:
+  static_volume:
+  media_volume:
+  elasticsearch_data:
+  media_dir:
+  static_dir:
+
+networks:
+  vidim:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450

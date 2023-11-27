@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "==4.2.1"
+python-dotenv = "==1.0.0"
+django-split-settings = "==1.2.0"
+psycopg2-binary = "==2.9.6"
+uwsgi = "==2.0.21"
+django-debug-toolbar = "==3.4.0"
+requests = "*"
+
+[dev-packages]
+pytest = "==6.2.5"
+black = "==23.3"
+flake8 = "==6.0"
+isort = "==5.12"
+
+[requires]
+python_version = "3.10"

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        pip install wemake-python-styleguide flake8-html
+
+    - name: Run linter
+      run: flake8 . --format=html --htmldir=lint-report
+      continue-on-error: true
+
+    - name: Upload lint report
+      uses: actions/upload-artifact@v2
+      with:
+        name: lint-report
+        path: lint-report/
+
+ notify:
+   needs: [lint]  # (and other jobs)
+   runs-on: ubuntu-latest
+
+   steps:
+   - name: Notify on Telegram
+     if: success()  # Only notify if previous jobs succeeded
+     uses: appleboy/telegram-action@master
+     with:
+       to: ${{ secrets.TELEGRAM_TO }}
+       token: ${{ secrets.TELEGRAM_TOKEN }}
+       message: "Linting passed successfully!"
+
+  type-check:
+    strategy:
+      matrix:
+        python-version: [ 3.7, 3.8, 3.9 ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install mypy
+
+      - name: Type check
+        run: mypy .

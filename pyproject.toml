@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "auth-sprint-2"
+version = "0.1.0"
+description = "Social auth service"
+authors = ["Vadim Barsukov <v.bars@icloud.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+redis = "4.6.0"
+uvicorn = "0.22.0"
+orjson = "3.9.1"
+sqlalchemy = "2.0.19"
+alembic = "1.11.1"
+asyncpg = "^0.28.0"
+werkzeug = "2.3.6"
+fastapi = "^0.100.1"
+pydantic = {extras = ["email"], version = "^2.3.0"}
+typer = "^0.9.0"
+async-fastapi-jwt-auth = "0.6.1"
+asyncio = "^3.4.3"
+pydantic-settings = "^2.0.3"
+authlib = "^1.2.1"
+jinja2 = "^3.1.2"
+itsdangerous = "^2.1.2"
+slowapi = "^0.1.8"
+opentelemetry-api = "^1.20.0"
+opentelemetry-sdk = "^1.20.0"
+opentelemetry-instrumentation-fastapi = "^0.41b0"
+opentelemetry-exporter-jaeger = "^1.20.0"
+gunicorn = "^21.2.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "==7.4.0"
+pytest-asyncio = "==0.21.0"
+httpx = "==0.24.1"
+asgi-lifespan = "==2.*"
+pytest-cov = "==4.1.0"
+pytest-mock = "==3.11.1"
+flake8 = "==6.0"
+black = "*"
+isort = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+
+[tool.isort]
+known_local_folder = "auth_service"
+lines_after_imports = 2
+multi_line_output = 3
+line_length = 120
+include_trailing_comma = true

@@ -1,0 +1,51 @@
+version: '3'
+services:
+  tests:
+    build: .
+    environment:
+      - ELASTIC_PORT=9200
+      - ELASTIC_HOST=elasticsearch
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - FAST_API_PORT=8888
+      - FAST_API_HOST=fast-api
+    depends_on:
+      - fast-api
+
+  fast-api:
+    build:
+      context: ../../
+    expose:
+      - "8888"
+    ports:
+      - "8888:8888"
+    environment:
+      - ELASTIC_PORT=9200
+      - ELASTIC_HOST=elasticsearch
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - FAST_API_PORT=8888
+      - FAST_API_HOST=0.0.0.0
+    depends_on:
+      - redis
+      - elasticsearch
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+
+  elasticsearch:
+    image: elasticsearch:8.6.2
+    restart: always
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms200m -Xmx200m
