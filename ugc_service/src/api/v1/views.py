@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -15,12 +16,12 @@ router = APIRouter()
 )
 async def views(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     chunk: int,
     service: ViewsService = Depends(get_service),
 ) -> SavedDataModel:
-    return await service.create({'user_id': user_id, 'movie_id': movie_id, 'chunk': chunk})
+    return await service.create({'user_id': str(user_id), 'movie_id': str(movie_id), 'chunk': chunk})
 
 
 @router.get(
@@ -29,9 +30,9 @@ async def views(
 )
 async def get_tilm_rating_list(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     service: ViewsService = Depends(get_service),
 ) -> list[ViewModel]:
-    return await service.get_list({'user_id': user_id, 'movie_id':  movie_id})
+    return await service.get_list({'user_id': str(user_id), 'movie_id': str(movie_id)})
 
