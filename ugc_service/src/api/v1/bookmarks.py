@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -15,11 +16,11 @@ router = APIRouter()
 )
 async def add_bookmark(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     service: BookmarksService = Depends(get_service),
 ) -> SavedDataModel:
-    return await service.create({'user_id': user_id, 'movie_id': movie_id})
+    return await service.create({'user_id': str(user_id), 'movie_id': str(movie_id)})
 
 
 @router.get(
@@ -28,10 +29,10 @@ async def add_bookmark(
 )
 async def get_bookmark_list(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
+    user_id: UUID,
     service: BookmarksService = Depends(get_service),
 ) -> list[BookmarkModel]:
-    return await service.get_list({'user_id': user_id})
+    return await service.get_list({'user_id': str(user_id)})
 
 
 @router.delete(
@@ -39,11 +40,11 @@ async def get_bookmark_list(
 )
 async def delete_bookmark(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     service: BookmarksService = Depends(get_service),
 ) -> dict[str, str]:
-    await service.delete({'user_id': user_id, 'movie_id': movie_id})
+    await service.delete({'user_id': str(user_id), 'movie_id': str(movie_id)})
 
     return {'ok': 'deleted'}
 

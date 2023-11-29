@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -15,13 +16,13 @@ router = APIRouter()
 )
 async def reviews(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     review_text: str,
     score: int,
     service: ReviewsService = Depends(get_service),
 ) -> SavedDataModel:
-    return await service.create({'user_id': user_id, 'movie_id': movie_id, 'review_text': review_text, 'score': score})
+    return await service.create({'user_id': str(user_id), 'movie_id': str(movie_id), 'review_text': review_text, 'score': score})
 
 
 @router.get(
@@ -30,10 +31,10 @@ async def reviews(
 )
 async def get_tilm_rating_list(
     user: Annotated[dict, Depends(security_jwt)],
-    movie_id: int,
+    movie_id: UUID,
     service: ReviewsService = Depends(get_service),
 ) -> list[ReviewModel]:
-    return await service.get_list({'movie_id': movie_id})
+    return await service.get_list({'movie_id': str(movie_id)})
 
 
 @router.delete(
@@ -41,26 +42,26 @@ async def get_tilm_rating_list(
 )
 async def film_rating(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     service: ReviewsService = Depends(get_service),
 ) -> dict[str, str]:
-    await service.delete({'user_id': user_id, 'movie_id': movie_id})
+    await service.delete({'user_id': str(user_id), 'movie_id': str(movie_id)})
 
     return {'ok': 'deleted'}
 
 
-@router.get(
+@router.put(
     path='',
     response_model=list[SavedDataModel],
 )
-async def get_tilm_rating_list(
+async def update_tilm_rating_list(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     review_text: str,
     score: int,
     service: ReviewsService = Depends(get_service),
 ) -> SavedDataModel:
-    return await service.update({'user_id': user_id, 'movie_id': movie_id, 'review_text': review_text, 'score': score})
+    return await service.update({'user_id': str(user_id), 'movie_id': str(movie_id), 'review_text': review_text, 'score': score})
 

@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 
 class BaseUGCModel(BaseModel):
-    user_id: int
-    movie_id: int
+    user_id: str
+    movie_id: str
 
 
 class BookmarkModel(BaseUGCModel):
@@ -18,7 +18,7 @@ class FilmRatingModel(BaseUGCModel):
 
 
 class ReviewRatingModel(BaseUGCModel):
-    author_id: int
+    author_id: str
     score: int
 
 

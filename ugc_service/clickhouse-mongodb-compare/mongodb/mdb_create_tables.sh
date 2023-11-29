@@ -10,17 +10,17 @@ docker exec -it mongocfg1 bash -c 'echo "rs.initiate({_id: \"mongors1conf\", con
     && docker exec -it mongos1 bash -c 'echo "sh.enableSharding(\"movies\")" | mongosh' \
     && echo 'db has been created' \
     && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.views\")" | mongosh' \
-    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.views\", {\"user_id\": 1, \"movie_id\": 1})" | mongosh' \
+    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.views\", {\"user_id\": \"hashed\"})" | mongosh' \
     && echo 'views collection has been created' \
-    && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.reviews\")" | mongosh' \
-    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.reviews\", {\"user_id\": 1, \"movie_id\": 1})" | mongosh' \
-    && echo 'reviews collection has been created' \
     && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.review_ratings\")" | mongosh' \
-    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.review_ratings\", {\"author_id\": 1, \"movie_id\": 1})" | mongosh' \
+    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.review_ratings\",{\"review_id\": \"hashed\"})" | mongosh' \
     && echo 'review_ratings collection has been created' \
     && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.film_ratings\")" | mongosh' \
-    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.film_ratings\", {\"user_id\": 1, \"movie_id\": 1})" | mongosh' \
-    && echo 'film_ratings collection has been created' \
-    && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.bookmarks\")" | mongosh' \
-    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.bookmarks\", {\"user_id\": 1, \"movie_id\": 1})" | mongosh' \
-    && echo 'bookmarks collection has been created'
+    && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.film_ratings\", {\"user_id\": \"hashed\"})" | mongosh' \
+    && echo 'film_ratings collection has been created'
+    # && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.bookmarks\")" | mongosh' \
+    # && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.bookmarks\", {\"user_id\": \"hashed\"})" | mongosh' \
+    # && echo 'bookmarks collection has been created'
+    # && docker exec -it mongos1 bash -c 'echo "db.createCollection(\"movies.reviews\")" | mongosh' \
+    # && docker exec -it mongos1 bash -c 'echo "sh.shardCollection(\"movies.reviews\", {\"user_id\": \"hashed\"})" | mongosh' \
+    # && echo 'reviews collection has been created' \

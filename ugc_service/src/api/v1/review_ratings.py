@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
@@ -15,13 +16,13 @@ router = APIRouter()
 )
 async def create_review_rating(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    author_id: int,
-    movie_id: int,
+    user_id: UUID,
+    author_id: UUID,
+    movie_id: UUID,
     score: int,
     service: ReviewRatingsService = Depends(get_service),
 ) -> SavedDataModel:
-    return await service.create({'user_id': user_id, 'author_id': author_id, 'movie_id': movie_id, 'score': score})
+    return await service.create({'user_id': str(user_id), 'author_id': str(author_id), 'movie_id': str(movie_id), 'score': score})
 
 
 @router.get(
@@ -30,11 +31,11 @@ async def create_review_rating(
 )
 async def get_tilm_rating_list(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    movie_id: int,
+    user_id: UUID,
+    movie_id: UUID,
     service: ReviewRatingsService = Depends(get_service),
 ) -> list[ReviewRatingModel]:
-    return await service.get_list({'user_id': user_id, 'movie_id': movie_id})
+    return await service.get_list({'user_id': str(user_id), 'movie_id': str(movie_id)})
 
 
 @router.delete(
@@ -42,12 +43,12 @@ async def get_tilm_rating_list(
 )
 async def film_rating(
     user: Annotated[dict, Depends(security_jwt)],
-    user_id: int,
-    author_id: int,
-    movie_id: int,
+    user_id: UUID,
+    author_id: UUID,
+    movie_id: UUID,
     service: ReviewRatingsService = Depends(get_service),
 ) -> dict[str, str]:
-    await service.delete({'user_id': user_id, 'author_id': author_id, 'movie_id': movie_id})
+    await service.delete({'user_id': str(user_id), 'author_id': str(author_id), 'movie_id': str(movie_id)})
 
     return {'ok': 'deleted'}
 

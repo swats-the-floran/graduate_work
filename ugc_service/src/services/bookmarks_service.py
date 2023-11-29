@@ -1,7 +1,6 @@
-from http import HTTPStatus
 import logging
 from functools import lru_cache
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -15,7 +14,6 @@ class BookmarksService(MongoMixin):
 
     async def get_list(self, query: dict) -> list[BookmarkModel]:
         return [BookmarkModel(**doc) async for doc in self.collection.find(query)]
-
 
 
 @lru_cache

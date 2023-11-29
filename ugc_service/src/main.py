@@ -45,10 +45,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(bookmarks.router, prefix="/api/v1/bookmarks", tags=["bookmarks"])
+# app.include_router(bookmarks.router, prefix="/api/v1/bookmarks", tags=["bookmarks"])
 app.include_router(film_ratings.router, prefix="/api/v1/film_ratings", tags=["film_ratings"])
 app.include_router(review_ratings.router, prefix="/api/v1/review_ratings", tags=["review_ratings"])
-app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["reviews"])
+# app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["reviews"])
 app.include_router(views.router, prefix="/api/v1/views", tags=["views"])
 
 if __name__ == "__main__":
