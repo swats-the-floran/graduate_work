@@ -168,8 +168,6 @@ services:
     container_name: db
     restart: always
     user: ${POSTGRES_USER}
-    expose:
-      - "5432"
     volumes:
       - profiles_volume:/var/lib/postgresql/data/
       - ../psql/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
@@ -182,10 +180,15 @@ services:
       - vidim
     expose:
       - "5432"
+      - "5433"
     ports:
       - 5433:5432
     env_file:
       - .env
+    environment:
+      POSTGRES_USER: ${PROFILE_PG_USER}
+      POSTGRES_PASSWORD: ${PROFILE_PG_PASS}
+      POSTGRES_DB: ${PROFILE_PG_DB}
     logging:
       driver: gelf
       options:
