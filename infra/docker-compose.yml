@@ -163,6 +163,58 @@ services:
         gelf-address: udp://127.0.0.1:5044
         tag: admin
 
+  profiles_db:
+    image: postgres:13.0-alpine
+    container_name: profiles_db
+    restart: always
+    user: ${POSTGRES_USER}
+    volumes:
+      - profiles_volume:/var/lib/postgresql/data/
+      - ../psql/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - vidim
+    expose:
+      - "5432"
+    ports:
+      - 5433:5432
+    # env_file:
+    #   - .env
+    environment:
+      POSTGRES_USER: ${PROFILE_PG_USER}
+      POSTGRES_PASSWORD: ${PROFILE_PG_PASS}
+      POSTGRES_DB: ${PROFILE_PG_DB}
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: profiles_postgres
+
+  profiles_service:
+    build: ../profiles_service/
+    container_name: profiles_service
+    env_file:
+      - .env
+    networks:
+      - vidim
+    expose:
+      - "8000"
+    ports:
+      - 8002:8000
+    depends_on:
+      profiles_db:
+        condition: service_healthy
+    restart: always
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://127.0.0.1:5044
+        tag: profiles
+
   etl-service:
     build: ../psql_to_es/
     container_name: etl-service
@@ -863,6 +915,7 @@ services:
 
 volumes:
   data_volume:
+  profiles_volume:
   redis_data:
   static:
   static_volume:
