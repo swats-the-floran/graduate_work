@@ -11,6 +11,7 @@ class PersonAdmin(admin.ModelAdmin):
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('last_name', 'first_name')
     readonly_fields = ('age', 'gender_display', 'profile_image_tag')
+    exclude=('password',)
 
     def profile_image_tag(self, obj):
         if obj.profile_image:

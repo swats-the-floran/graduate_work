@@ -7,7 +7,7 @@ DATABASES = {
         "USER": os.environ.get("PROFILE_PG_USER"),
         "PASSWORD": os.environ.get("PROFILE_PG_PASS"),
         "HOST": os.environ.get("PROFILE_PG_HOST", default="db"),
-        "PORT": os.environ.get("PROFILE_PG_PORT", default=5433),
+        "PORT": os.environ.get("PROFILE_PG_PORT", default=5432),
         "OPTIONS": {"options": "-c search_path=public,content"},
     },
 }

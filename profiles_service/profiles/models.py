@@ -3,20 +3,28 @@ from datetime import date
 from django.db import models
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.db.models.fields import uuid
 from django.utils.translation import gettext_lazy as _
 
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError('Users must have an email address')
-        user = self.model(email=self.normalize_email(email), **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+class UUIDMixin(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    class Meta:
+        abstract = True
 
 
-class Person(AbstractBaseUser):
+# class CustomUserManager(BaseUserManager):
+#     def create_user(self, email, password=None, **extra_fields):
+#         if not email:
+#             raise ValueError('Users must have an email address')
+#         user = self.model(email=self.normalize_email(email), **extra_fields)
+#         user.set_password(password)
+#         user.save(using=self._db)
+#         return user
+
+
+class Person(UUIDMixin, AbstractBaseUser):
     class GenderChoices(models.TextChoices):
         MALE = 'M', _('Мужской')
         FEMALE = 'F', _('Женский')
@@ -28,7 +36,7 @@ class Person(AbstractBaseUser):
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GenderChoices.choices, null=True, blank=True)
 
-    objects = CustomUserManager()
+    # objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
 
@@ -55,4 +63,4 @@ class Person(AbstractBaseUser):
 
     @property
     def gender_display(self):
-        return self.gender.name
+        return self.gender
