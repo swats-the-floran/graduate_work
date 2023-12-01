@@ -1,0 +1,213 @@
+openapi: 3.0.0
+info:
+  title: profiles-service
+  version: v1
+paths:
+  /api/users:
+    post:
+      description: ""
+      summary: "Create User"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profile_image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: "Successful Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "422":
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+    
+    
+    patch:
+      security:
+        - HTTPBearer: []
+      description: ""
+      summary: "Update User"
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatch'
+      responses:
+        "200":
+          description: "Successful Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+        "422":
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+                
+  /api/users/whoami:
+    get:
+      security:
+        - HTTPBearer: []
+      description: ""
+      summary: "Get user info"
+      tags:
+        - Users
+      responses:
+        "200":
+          description: "Successful Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+                
+  /api/users/user/{uuid}:
+    patch:
+      security:
+          - HTTPBearer: []
+      description: ""
+      summary: "Make the user inactive"
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: user uuid
+      responses:
+        "200":
+          description: "Successful Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Detail"
+
+components:
+  schemas:
+    # USERS 
+    UserPatch:
+      allOf:
+        - $ref: '#/components/schemas/UserCreate'
+        - type: object
+    UserResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserCreate'
+        - type: object
+      properties:
+        uuid:
+          type: integer
+        is_active:
+          type: boolean
+          example: true
+
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          example: ivanov@mail.ru
+        first_name:
+          type: string
+          example: ivan
+        last_name:
+          type: string
+          example: ivanov
+        date_of_birth:
+          type: string
+          example: 1990-09-19
+        gender:
+          type: string
+          example: Мужской
+        password:
+          type: string
+          example: ivanov123
+
+          
+    # ERRORS
+    ValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+                  description: string
+                  example: string
+              msg:
+                type: string
+              type:
+                type: string
+    Detail:
+      type: object
+      properties:
+        detail:
+          type: string
+          
+      
+  securitySchemes:
+    HTTPBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
