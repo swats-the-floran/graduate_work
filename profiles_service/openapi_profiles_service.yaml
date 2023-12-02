@@ -36,7 +36,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationError"
     
-    
+  /api/users/user/{uuid}:
     patch:
       security:
         - HTTPBearer: []
@@ -104,7 +104,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Detail"
                 
-  /api/users/user/{uuid}:
+  /api/users/user/{uuid}/deactivate:
     patch:
       security:
           - HTTPBearer: []
@@ -152,7 +152,7 @@ components:
         - type: object
       properties:
         uuid:
-          type: integer
+          type: string
         is_active:
           type: boolean
           example: true
