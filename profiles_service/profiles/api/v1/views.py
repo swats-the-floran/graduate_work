@@ -2,9 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from profiles_service.profiles.models import Person
-from profiles_service.profiles.api.v1.serializers import PersonResponseSerializer
-from profiles_service.profiles.profile_service import PersonService
+from profiles.models import Person
+from profiles.api.v1.serializers import PersonResponseSerializer
+from profiles.profile_service import PersonService
 
 
 class PersonAPIView(APIView):

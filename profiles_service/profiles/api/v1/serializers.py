@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from profiles_service.profiles.models import Person
+from profiles.models import Person
 
 
 class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):

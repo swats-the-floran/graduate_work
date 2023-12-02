@@ -1,4 +1,4 @@
-from profiles_service.profiles.api.v1.serializers import ProfileCreateOrUpdateSerializer
+from profiles.api.v1.serializers import ProfileCreateOrUpdateSerializer
 
 
 class PersonService:
