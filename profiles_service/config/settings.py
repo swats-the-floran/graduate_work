@@ -40,3 +40,5 @@ include("components/statick.py")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOCALE_PATHS = ["movies/locale"]
