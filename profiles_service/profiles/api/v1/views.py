@@ -8,18 +8,17 @@ from profiles.profile_service import PersonService
 
 
 class PersonAPIView(APIView):
+    def get_person(self, uuid):
+        return get_object_or_404(Person, id=uuid)
+
     def get(self, request, uuid=None):
         if uuid:
-            try:
-                user = Person.objects.get(id=uuid)
-                serializer = PersonResponseSerializer(user)
-                return Response(serializer.data)
-            except Person.DoesNotExist:
-                return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            user = self.get_person(uuid)
+            serializer = PersonResponseSerializer(user)
         else:
             users = Person.objects.all()
             serializer = PersonResponseSerializer(users, many=True)
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def post(self, request):
         user = PersonService.create_user(request.data)
@@ -30,11 +29,7 @@ class PersonAPIView(APIView):
         if not uuid:
             return Response({'detail': 'Missing UUID'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user = Person.objects.get(id=uuid)
-        except Person.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
+        user = self.get_person(uuid)
         updated_user = PersonService.update_user(user, request.data)
         serializer = PersonResponseSerializer(updated_user)
         return Response(serializer.data)
