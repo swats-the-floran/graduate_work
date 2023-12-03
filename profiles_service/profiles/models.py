@@ -35,6 +35,7 @@ class Person(UUIDMixin, AbstractBaseUser):
     date_of_birth = models.DateField(null=True, blank=True, verbose_name=_("Дата рождения"))
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GenderChoices.choices, null=True, blank=True)
+    is_active = models.BooleanField(default=True, verbose_name=_("Активен"))
 
     # objects = CustomUserManager()
 
