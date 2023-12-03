@@ -13,6 +13,7 @@ django-debug-toolbar = "==3.4.0"
 requests = "*"
 Pillow = "==10.1.0"
 djangorestframework = "==3.14.0"
+drf-spectacular = "*"
 
 [dev-packages]
 pytest = "==6.2.5"

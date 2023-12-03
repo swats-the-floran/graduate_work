@@ -6,12 +6,21 @@ from django.utils.html import format_html
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ('email', 'short_full_name', 'age', 'gender_display', 'date_of_birth', 'profile_image_tag')
+    list_display = (
+        'id',
+        'email',
+        'short_full_name',
+        'age',
+        'gender_display',
+        'date_of_birth',
+        'profile_image_tag',
+        'is_active'
+    )
     list_filter = ('gender', 'date_of_birth')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('last_name', 'first_name')
     readonly_fields = ('age', 'gender_display', 'profile_image_tag')
-    exclude=('password',)
+    exclude = ('password',)
 
     def profile_image_tag(self, obj):
         if obj.profile_image:

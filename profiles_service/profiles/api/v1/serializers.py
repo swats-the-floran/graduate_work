@@ -10,14 +10,14 @@ class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'date_of_birth', 'gender', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
-    def set_user_password(self, user, password):
+    def _set_user_password(self, user, password):
         if password is not None:
             user.set_password(password)
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = Person(**validated_data)
-        self.set_user_password(user, password)
+        self._set_user_password(user, password)
         user.save()
         return user
 
@@ -25,7 +25,7 @@ class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):
         password = validated_data.pop('password', None)
         for field, value in validated_data.items():
             setattr(instance, field, value)
-        self.set_user_password(instance, password)
+        self._set_user_password(instance, password)
         instance.save()
         return instance
 

@@ -40,6 +40,4 @@ RUN groupadd -r ${GID} \
 
 USER ${UID}
 
-CMD ["python", "manage.py", "runserver", "--settings=config.settings"]
-
 ENTRYPOINT [ "./entrypoint.sh" ]
