@@ -13,6 +13,10 @@ class RedisConfig(BaseSettings):
     class Config:
         env_prefix = 'redis_'
 
+    @property
+    def url(self):
+        return f'redis://{self.host}:{self.port}'
+
 
 class DBConfig(BaseSettings):
     db: str = "cinema"
@@ -27,6 +31,13 @@ class DBConfig(BaseSettings):
     @property
     def url(self) -> str:
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
+
+
+class ProfileServiceConfig(BaseSettings):
+    url: str = 'http://profile'
+
+    class Config:
+        env_prefix = 'profile_'
 
 
 class BaseConfig(BaseSettings):
@@ -44,6 +55,7 @@ class BaseConfig(BaseSettings):
 
     db: DBConfig = DBConfig()
     redis_db: RedisConfig = RedisConfig()
+    profile: ProfileServiceConfig = ProfileServiceConfig()
 
 
 settings: BaseConfig = BaseConfig()
