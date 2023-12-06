@@ -36,7 +36,7 @@ include("components/internationalization.py")
 
 
 # Static files (CSS, JavaScript, Images)
-include("components/statick.py")
+include("components/static.py")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
