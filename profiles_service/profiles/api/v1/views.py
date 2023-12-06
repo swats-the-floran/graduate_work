@@ -6,7 +6,7 @@ from rest_framework import status
 
 from profiles.models import Person
 from profiles.api.v1.serializers import PersonResponseSerializer
-from profiles.profile_service import PersonService
+from profiles.services.profile_service import PersonService
 
 
 class PersonAPIView(APIView):
