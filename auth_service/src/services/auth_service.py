@@ -1,15 +1,19 @@
+import aiohttp
+import concurrent.futures
 import secrets
 import uuid
-from datetime import datetime
-from functools import lru_cache
-from typing import Any
-
 from async_fastapi_jwt_auth import AuthJWT
+from datetime import datetime
 from fastapi import Depends
+from functools import lru_cache
+from functools import partial
 from redis.asyncio import Redis
+import asyncio
+from typing import Any
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from core.jwt_config import setting_jwt
+from core.tasks import register_new_profile
 from db.exceptions import UserNotFound, SocialAccountNotFound
 from db.postgres import get_async_session
 from db.redis import get_redis
@@ -57,6 +61,16 @@ class AuthService:
                 second_name=second_name,
             ),
         )
+        profile_json = {
+            "password": password,
+            "email": email
+        }
+
+        call = partial(register_new_profile.apply_async, (profile_json,))
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            await loop.run_in_executor(pool, call)
+
         self._email_client.send(email=user.email)
         return user
 
@@ -87,11 +101,11 @@ class AuthService:
             await self._social_repo.update(social_account)
         except SocialAccountNotFound:
             await self._social_repo.create(
-                    SocialAccount(
-                        user_id=user.id,
-                        social_id=auth_profile['social_id'],
-                        social_name=auth_profile['social_name']
-                    )
+                SocialAccount(
+                    user_id=user.id,
+                    social_id=auth_profile['social_id'],
+                    social_name=auth_profile['social_name']
+                )
             )
 
         return user
@@ -118,7 +132,6 @@ class AuthService:
             subject=user_id, user_claims={"access_jti": access_jti, "roles": roles}
         )
 
-
         return access_token, refresh_token
 
     async def revoke_both_tokens(self, authorize: AuthJWT) -> None:
@@ -136,6 +149,7 @@ class AuthService:
 def get_role_repository(session=Depends(get_async_session)) -> RoleRepository:
     return RoleRepository(session)
 
+
 @lru_cache()
 def get_social_repository(session=Depends(get_async_session)) -> SocialRepository:
     return SocialRepository(session)
@@ -143,9 +157,9 @@ def get_social_repository(session=Depends(get_async_session)) -> SocialRepositor
 
 @lru_cache()
 def get_auth_service(
-    user_repository: UserRepository = Depends(get_user_repository),
-    role_repossitory: RoleRepository = Depends(get_role_repository),
-    social_repository: SocialRepository = Depends(get_social_repository),
-    redis: Redis = Depends(get_redis),
+        user_repository: UserRepository = Depends(get_user_repository),
+        role_repossitory: RoleRepository = Depends(get_role_repository),
+        social_repository: SocialRepository = Depends(get_social_repository),
+        redis: Redis = Depends(get_redis),
 ) -> AuthService:
     return AuthService(user_repository, social_repository, role_repossitory, FakeEmailClient(), redis)
