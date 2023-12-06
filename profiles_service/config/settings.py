@@ -19,7 +19,6 @@ DEBUG = os.environ.get("DEBUG")
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
 
 
-
 # Application definition
 include("components/apps_settings.py")
 

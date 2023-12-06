@@ -37,12 +37,12 @@ class PasswordNotEqual(Exception):
 
 class AuthService:
     def __init__(
-            self,
-            user_repo: UserRepository,
-            social_repo: SocialRepository,
-            role_repository: RoleRepository,
-            email_client: FakeEmailClient,
-            redis: Redis,
+        self,
+        user_repo: UserRepository,
+        social_repo: SocialRepository,
+        role_repository: RoleRepository,
+        email_client: FakeEmailClient,
+        redis: Redis,
     ) -> None:
         self._user_repo = user_repo
         self._social_repo = social_repo

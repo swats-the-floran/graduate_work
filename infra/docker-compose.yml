@@ -145,8 +145,6 @@ services:
     command: "'celery -A celery_config:app worker --loglevel=info -Q profile_queue'"
     env_file:
       - .env
-#    environment:
-#      PROFILE_SERVICE_URL: http://profiles-service:8000
     networks:
       - vidim
     depends_on:
@@ -210,7 +208,7 @@ services:
         tag: profiles_postgres
 
   profiles-service:
-    build: ../profiles-service/
+    build: ../profiles_service/
     container_name: profiles-service
     env_file:
       - .env
