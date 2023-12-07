@@ -47,6 +47,13 @@ class Person(UUIDMixin, AbstractBaseUser):
         db_table = 'client'
         ordering = ['last_name', 'first_name']
 
+    def delete(self):
+        self.is_active = False
+        self.save()
+
+    def delete_completely(self, using=None, keep_parents=False):
+        return super().delete(using, keep_parents)
+
     @property
     def short_full_name(self):
         if self.first_name and self.last_name:
