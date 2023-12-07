@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import Person
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import format_html
+
+from .models import Bookmark, Favorite, Person
 
 
 @admin.register(Person)
@@ -28,3 +29,14 @@ class PersonAdmin(admin.ModelAdmin):
         return _("Нет фото.")
 
     profile_image_tag.short_description = _('Фото профиля')
+
+
+@admin.register(Bookmark)
+class BookmarkAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    pass
+

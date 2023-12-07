@@ -49,6 +49,20 @@ class PersonAPIView(APIView):
         serializer = PersonResponseSerializer(updated_user)
         return Response(serializer.data)
 
+    # def delete(self, request, uuid=None):
+    #     if not uuid:
+    #         return Response({'detail': 'Missing UUID'}, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     user = get_object_or_404(Person, id=uuid)
+    #     if request.data.get('completely'):
+    #         user.delete_completely()
+    #     elif not user.is_active:
+    #         return Response({"detail": "not found"}, status=status.HTTP_404_NOT_FOUND)
+    #     else:
+    #         user.delete()
+    #
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class DeactivatePersonAPIView(APIView):
 
@@ -65,4 +79,14 @@ class DeactivatePersonAPIView(APIView):
         user.is_active = False
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BookmarkAPIView(APIView):
+
+    pass
+
+
+class FavoriteAPIView(APIView):
+
+    pass
 
