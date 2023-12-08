@@ -115,3 +115,18 @@ class Favorite(TimeStampedMixin):
 
         constraints = [models.UniqueConstraint(fields=["movie_id", "person"], name="movie_person_idx")]
 
+
+class FilmReview(UUIDMixin, TimeStampedMixin):
+    movie_id = models.UUIDField(_("id фильма"))
+    movie_name = models.TextField(_("Название фильма"))
+    review_text = models.TextField(_("Текст"))
+    score = models.IntegerField(_("Оценка"))
+    person = models.ForeignKey(Person, related_name='film_reviews', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'content"."film_review'
+        verbose_name = _("Рецензия")
+        verbose_name_plural = _("Рецензии")
+
+        constraints = [models.UniqueConstraint(fields=["movie_id", "person"], name="movies_persons_idx")]
+

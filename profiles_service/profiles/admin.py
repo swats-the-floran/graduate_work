@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import format_html
 
-from .models import Bookmark, Favorite, Person
+from .models import Bookmark, Favorite, FilmReview, Person
 
 
 @admin.register(Person)
@@ -38,5 +38,10 @@ class BookmarkAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(FilmReview)
+class FilmReviewAdmin(admin.ModelAdmin):
     pass
 
