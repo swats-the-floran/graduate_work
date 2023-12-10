@@ -37,7 +37,7 @@ class PersonResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
-class FavoriteSerializers(serializers.ModelSerializer):
+class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from profiles.models import Person
-from profiles.api.v1.serializers import PersonResponseSerializer
+from profiles.api.v1.serializers import PersonResponseSerializer, FavoriteSerializer, BookmarkSerializer
 from profiles.profile_service import PersonService
 
 
@@ -82,11 +82,9 @@ class DeactivatePersonAPIView(APIView):
 
 
 class BookmarkAPIView(APIView):
-
-    pass
+    serializer_class = BookmarkSerializer
 
 
 class FavoriteAPIView(APIView):
-
-    pass
+    serializer_class = FavoriteSerializer
 
