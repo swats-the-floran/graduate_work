@@ -109,3 +109,21 @@ class BookmarkAPIView(APIView):
 class FavoriteAPIView(APIView):
     serializer_class = FavoriteSerializer
 
+    def post(self, request):
+        favorite_movie = PersonService.create_favorite_movie(request.data)
+        serializer = FavoriteSerializer(favorite_movie)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, uuid=None):
+        if not uuid:
+            return Response({'detail': 'Missing UUID'}, status=status.HTTP_400_BAD_REQUEST)
+
+        favorite_movie = get_object_or_404(Favorite, id=uuid)
+
+        if request.data.get('completely'):
+            favorite_movie.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        favorite_movie.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

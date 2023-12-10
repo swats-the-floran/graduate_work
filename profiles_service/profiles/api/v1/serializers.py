@@ -44,6 +44,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
 
+    def create(self, validated_data):
+        favorite_movie = Favorite(**validated_data)
+        favorite_movie.save()
+        return favorite_movie
+
 
 class BookmarkSerializer(serializers.ModelSerializer):
 
