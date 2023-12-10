@@ -114,16 +114,12 @@ class FavoriteAPIView(APIView):
         serializer = FavoriteSerializer(favorite_movie)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, uuid=None):
-        if not uuid:
-            return Response({'detail': 'Missing UUID'}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, favorite_movie_id=None):
+        if not favorite_movie_id:
+            return Response({'detail': 'Missing ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-        favorite_movie = get_object_or_404(Favorite, id=uuid)
+        favorite_movie = get_object_or_404(Favorite, id=favorite_movie_id)
 
-        if request.data.get('completely'):
-            favorite_movie.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        favorite_movie.save()
+        favorite_movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

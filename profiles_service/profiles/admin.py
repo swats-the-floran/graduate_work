@@ -38,7 +38,7 @@ class BookmarkAdmin(admin.ModelAdmin):
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'movie_id', 'movie_name', 'person')
 
 
 @admin.register(FilmReview)
