@@ -11,8 +11,8 @@ urlpatterns = [
     # path('users/<uuid:uuid>/detail/', PersonAPIView.as_view(), name='get_detailed_user_info'),
 
     # bookamarks
-    path('users/<uuid:uuid/bookmarks/', BookmarkAPIView.as_view(), name='bookmarks'),
+    path('users/<uuid:uuid>/bookmarks/', BookmarkAPIView.as_view(), name='bookmarks'),
     # favorites
-    path('users/<uuid:uuid/favorites/', FavoriteAPIView.as_view(), name='favorites'),
+    path('users/<uuid:uuid>/favorites/', FavoriteAPIView.as_view(), name='favorites'),
     # reviews
 ]
