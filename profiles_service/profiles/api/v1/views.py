@@ -2,11 +2,12 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 
-from profiles.models import Person
+from profiles.models import Person, Bookmark, Favorite
 from profiles.api.v1.serializers import PersonResponseSerializer, FavoriteSerializer, BookmarkSerializer
 from profiles.profile_service import PersonService
+from profiles.utils import StandardResultsSetPagination
 
 
 class PersonAPIView(APIView):
@@ -79,6 +80,26 @@ class DeactivatePersonAPIView(APIView):
         user.is_active = False
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BookmarksListView(generics.ListAPIView):
+    queryset = Bookmark.objects.all()
+    serializer_class = BookmarkSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        person_id = self.kwargs.get("uuid")
+        return Bookmark.objects.filter(person_id=person_id).all()
+
+
+class FavoritesListView(generics.ListAPIView):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        person_id = self.kwargs.get("uuid")
+        return Favorite.objects.filter(person_id=person_id).all()
 
 
 class BookmarkAPIView(APIView):

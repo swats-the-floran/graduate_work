@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import BookmarkAPIView, PersonAPIView, DeactivatePersonAPIView, FavoriteAPIView
+from .views import (
+    BookmarkAPIView,
+    PersonAPIView,
+    DeactivatePersonAPIView,
+    FavoriteAPIView,
+    BookmarksListView,
+    FavoritesListView
+)
 
 
 urlpatterns = [
@@ -11,8 +18,10 @@ urlpatterns = [
     # path('users/<uuid:uuid>/detail/', PersonAPIView.as_view(), name='get_detailed_user_info'),
 
     # bookamarks
-    path('users/<uuid:uuid/bookmarks/', BookmarkAPIView.as_view(), name='bookmarks'),
+    path('users/<uuid:uuid>/bookmarks/', BookmarkAPIView.as_view(), name='bookmarks'),
+    path('users/<uuid:uuid>/bookmarks/list', BookmarksListView.as_view(), name='bookmarks_list'),
     # favorites
-    path('users/<uuid:uuid/favorites/', FavoriteAPIView.as_view(), name='favorites'),
+    path('users/<uuid:uuid>/favorites/', FavoriteAPIView.as_view(), name='favorites'),
+    path('users/<uuid:uuid>/favorites/list', FavoritesListView.as_view(), name='favorites_list')
     # reviews
 ]
