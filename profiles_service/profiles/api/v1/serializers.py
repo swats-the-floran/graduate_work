@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from profiles.models import Person
+from profiles.models import Person, FilmReview, Favorite, Bookmark
 
 
 class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):
@@ -33,5 +33,21 @@ class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):
 class PersonResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
+        fields = '__all__'
+        read_only_fields = ['id']
+
+
+class FavoriteSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        read_only_fields = ['id']
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Bookmark
         fields = '__all__'
         read_only_fields = ['id']
