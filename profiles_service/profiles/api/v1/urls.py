@@ -1,4 +1,5 @@
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views import (
     BookmarkAPIView,
     PersonAPIView,
@@ -22,6 +23,9 @@ urlpatterns = [
     # favorites
     path('users/favorite_movies/', FavoriteAPIView.as_view(), name='favorite_movie_create'),
     path('users/favorite_movies/<int:favorite_movie_id>/', FavoriteAPIView.as_view(), name='favorite_movie_delete'),
-    path('users/<uuid:uuid>/favorites/list/', FavoritesListView.as_view(), name='favorites_list')
+    path('users/<uuid:uuid>/favorites/list/', FavoritesListView.as_view(), name='favorites_list'),
     # reviews
+    # openapi
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('openapi-profiles/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
