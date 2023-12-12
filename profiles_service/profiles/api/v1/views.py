@@ -1,13 +1,44 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from rest_framework.views import APIView
+from rest_framework import status, generics, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework.views import APIView
 
 from profiles.models import Person, Bookmark, Favorite
-from profiles.api.v1.serializers import PersonResponseSerializer, FavoriteSerializer, BookmarkSerializer
+from profiles.api.v1.serializers import PersonResponseSerializer, FavoriteSerializer, BookmarkSerializer, PersonSerializer
 from profiles.profile_service import PersonService
 from profiles.utils import StandardResultsSetPagination
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary='Get a persons\' list',
+    ),
+    create=extend_schema(
+        request=PersonSerializer,
+        summary='Create a person',
+    ),
+    retrieve=extend_schema(
+        summary='Get a person',
+    ),
+    update=extend_schema(
+        exclude=True,
+    ),
+    partial_update=extend_schema(
+        request=PersonSerializer,
+        summary='Edit a person',
+    ),
+    destroy=extend_schema(
+        summary='Delete a person',
+    ),
+)
+class PersonViewSet(viewsets.ModelViewSet):
+    queryset = Person.objects.all().filter(is_active=True)
+    serializer_class = PersonSerializer
+    pagination_class = StandardResultsSetPagination
+    # permission_classes = [IsAuthenticated, ]
 
 
 class PersonAPIView(APIView):

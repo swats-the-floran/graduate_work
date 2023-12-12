@@ -3,6 +3,13 @@ from rest_framework import serializers
 from profiles.models import Person, FilmReview, Favorite, Bookmark
 
 
+class PersonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        read_only_fields = ('id',)
+        exclude = ('password',)
+
+
 class ProfileCreateOrUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
