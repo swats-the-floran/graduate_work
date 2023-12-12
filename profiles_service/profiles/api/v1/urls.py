@@ -13,8 +13,9 @@ router = SimpleRouter()
 router.register('persons', PersonViewSet)
 
 persons_router = NestedSimpleRouter(router, r'persons', lookup='person')
-persons_router.register(r'bookmarks', BookmarkViewSet, basename='user-bookmarks')
-persons_router.register(r'favorites', FavoriteViewSet, basename='user-favorites')
+persons_router.register(r'bookmarks', BookmarkViewSet, basename='person-bookmarks')
+persons_router.register(r'favorites', FavoriteViewSet, basename='person-favorites')
+persons_router.register(r'reviews', FavoriteViewSet, basename='person-reviews')
 
 
 urlpatterns = [

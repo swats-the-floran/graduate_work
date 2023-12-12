@@ -1,9 +1,20 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from rest_framework import viewsets
+from rest_framework.decorators import action
 
-from profiles.models import Person, Bookmark, Favorite
-from profiles.api.v1.serializers import BookmarkSerializer, FavoriteSerializer, PersonSerializer
+from profiles.api.v1.serializers import (
+    BookmarkSerializer,
+    FavoriteSerializer,
+    FilmReviewSerializer,
+    PersonSerializer,
+)
+from profiles.models import (
+    Bookmark,
+    Favorite,
+    FilmReview,
+    Person,
+)
 from profiles.utils import StandardResultsSetPagination
 
 
@@ -28,6 +39,10 @@ class PersonViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     # permission_classes = (IsAuthenticated,)
 
+    @action(detail=True, url_path='detail')
+    def detail(self):
+        pass
+
 
 @extend_schema_view(
     list=extend_schema(summary='Get user\'s bookmarks list'),
@@ -47,7 +62,7 @@ class BookmarkViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Bookmark.objects.filter(person=self.kwargs['person_pk'])
+        return Bookmark.objects.filter(person=self.kwargs['person_id'])
 
 
 @extend_schema_view(
@@ -68,5 +83,36 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Favorite.objects.filter(person=self.kwargs['person_pk'])
+        return Favorite.objects.filter(person=self.kwargs['person_id'])
 
+
+@extend_schema_view(
+    list=extend_schema(summary='Get user\'s film reviews list'),
+    create=extend_schema(
+        request=FavoriteSerializer,
+        summary='Create user\'s favorite movie record',
+    ),
+    retrieve=extend_schema(exclude=True),
+    update=extend_schema(exclude=True),
+    partial_update=extend_schema(
+        request=FilmReviewSerializer,
+        summary='Edit user\'s film review',
+    ),
+    destroy=extend_schema(summary='Delete user\'s film review'),
+    detail=extend_schema(
+        responses=FilmReviewSerializer,
+        summary='Detailed endpoint',
+    ),
+)
+class FilmReviewViewSet(viewsets.ModelViewSet):
+
+    serializer_class = FilmReviewSerializer
+    pagination_class = StandardResultsSetPagination
+    # permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return FilmReview.objects.filter(person=self.kwargs['person_id'])
+
+    # @action(detail=True, url_path='detail', url_name='person-reviews-detail')
+    # def detail(self):
+    #     pass

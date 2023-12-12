@@ -16,7 +16,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = '__all__'
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'person')
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
@@ -24,4 +24,14 @@ class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
         fields = '__all__'
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'person')
+
+
+class FilmReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FilmReview
+        fields = '__all__'
+        read_only_fields = ('id', 'person')
+
+
