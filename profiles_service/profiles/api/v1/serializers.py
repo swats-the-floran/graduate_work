@@ -19,29 +19,60 @@ class FilmSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    films = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = Favorite
-        fields = '__all__'
+        exclude = ('created', 'modified', )
         read_only_fields = ('id', 'person')
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
-    silms = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = Bookmark
-        fields = '__all__'
+        exclude = ('created', 'modified', )
         read_only_fields = ('id', 'person')
 
 
 class FilmReviewSerializer(serializers.ModelSerializer):
-    films = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = FilmReview
-        fields = '__all__'
+        exclude = ('created', 'modified', )
         read_only_fields = ('id', 'person')
 
+
+class PersonDetailSerializer(serializers.ModelSerializer):
+    last_bookmarks = serializers.SerializerMethodField()
+    last_favorites = serializers.SerializerMethodField()
+    last_film_reviews = serializers.SerializerMethodField()
+
+    def get_last_bookmarks(self, person):
+        return BookmarkSerializer(
+            self.context['last_bookmarks'],
+            many=True,
+            context=self.context,
+        ).data
+
+    def get_last_favorites(self, person):
+        return FavoriteSerializer(
+            self.context['last_favorites'],
+            many=True,
+            context=self.context,
+        ).data
+
+    def get_last_film_reviews(self, person):
+        return FilmReviewSerializer(
+            self.context['last_film_reviews'],
+            many=True,
+            context=self.context,
+        ).data
+
+    class Meta:
+        model = Person
+        read_only_fields = ('id',)
+        exclude = ('password',)
 

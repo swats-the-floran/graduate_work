@@ -2,11 +2,13 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from profiles.api.v1.serializers import (
     BookmarkSerializer,
     FavoriteSerializer,
     FilmReviewSerializer,
+    PersonDetailSerializer,
     PersonSerializer,
 )
 from profiles.models import (
@@ -39,9 +41,21 @@ class PersonViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     # permission_classes = (IsAuthenticated,)
 
-    @action(detail=True, url_path='detail')
-    def detail(self):
-        pass
+    @action(detail=True, url_path='detailed')
+    def detailed(self, request, pk=None):
+        person = self.get_object()
+        last_bookmarks = Bookmark.objects.filter(person=person).order_by('-created')[:10]
+        last_favorites = Favorite.objects.filter(person=person).order_by('-created')[:10]
+        last_film_reviews = FilmReview.objects.filter(person=person).order_by('-created')[:10]
+
+        serializer = PersonDetailSerializer(person, context={
+            'request': request,
+            'last_bookmarks': last_bookmarks,
+            'last_favorites': last_favorites,
+            'last_film_reviews': last_film_reviews,
+        })
+
+        return Response(serializer.data)
 
 
 @extend_schema_view(
@@ -62,7 +76,7 @@ class BookmarkViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Bookmark.objects.filter(person=self.kwargs['person_id'])
+        return Bookmark.objects.filter(person=self.kwargs['person_pk'])
 
 
 @extend_schema_view(
@@ -83,7 +97,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Favorite.objects.filter(person=self.kwargs['person_id'])
+        return Favorite.objects.filter(person=self.kwargs['person_pk'])
 
 
 @extend_schema_view(
@@ -111,7 +125,7 @@ class FilmReviewViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return FilmReview.objects.filter(person=self.kwargs['person_id'])
+        return FilmReview.objects.filter(person=self.kwargs['person_pk'])
 
     # @action(detail=True, url_path='detail', url_name='person-reviews-detail')
     # def detail(self):
