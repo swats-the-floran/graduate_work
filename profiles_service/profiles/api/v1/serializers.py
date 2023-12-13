@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from profiles.models import Person, FilmReview, Favorite, Bookmark
+from profiles.models import Film, Person, FilmReview, Favorite, Bookmark
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -11,7 +11,15 @@ class PersonSerializer(serializers.ModelSerializer):
         exclude = ('password',)
 
 
+class FilmSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Film
+        fields = '__all__'
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
+    films = FilmSerializer(many=True, read_only=True)
 
     class Meta:
         model = Favorite
@@ -20,6 +28,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
+    silms = FilmSerializer(many=True, read_only=True)
 
     class Meta:
         model = Bookmark
@@ -28,6 +37,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
 
 class FilmReviewSerializer(serializers.ModelSerializer):
+    films = FilmSerializer(many=True, read_only=True)
 
     class Meta:
         model = FilmReview
