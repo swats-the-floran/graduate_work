@@ -84,6 +84,11 @@ class Person(UUIDMixin, TimeStampedMixin, AbstractBaseUser):
 class Film(UUIDMixin):
     name = models.CharField(max_length=1024, verbose_name=_("Название"))
 
+    class Meta:
+        db_table = 'content"."film'
+        verbose_name = _("Фильм")
+        verbose_name_plural = _("Фильмы")
+
 
 class Bookmark(TimeStampedMixin):
     timecode = models.IntegerField(_("Время"), blank=True, null=True)
