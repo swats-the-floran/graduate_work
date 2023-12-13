@@ -22,12 +22,11 @@ class TimeStampedMixin(models.Model):
         abstract = True
 
 
-class CustomUserManager(BaseUserManager):
+class CustomPersonManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Users must have an email address')
         user = self.model(email=self.normalize_email(email), **extra_fields)
-        # user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -45,7 +44,7 @@ class Person(UUIDMixin, TimeStampedMixin, AbstractBaseUser):
     gender = models.CharField(max_length=1, choices=GenderChoices.choices, null=True, blank=True)
     is_active = models.BooleanField(default=True, verbose_name=_("Активен"))
 
-    objects = CustomUserManager()
+    objects = CustomPersonManager()
 
     USERNAME_FIELD = 'email'
 
@@ -82,51 +81,52 @@ class Person(UUIDMixin, TimeStampedMixin, AbstractBaseUser):
         return self.gender
 
 
+class Film(UUIDMixin):
+    name = models.CharField(max_length=1024, verbose_name=_("Название"))
+
+
 class Bookmark(TimeStampedMixin):
-    movie_id = models.UUIDField(_("id фильма"))
-    movie_name = models.TextField(_("Название фильма"))
     timecode = models.IntegerField(_("Время"), blank=True, null=True)
     comment = models.TextField(_("Комментарий"), blank=True, null=True)
-    person = models.ForeignKey(Person, related_name='bookmarks', on_delete=models.DO_NOTHING)
+    person = models.ForeignKey(Person, related_name="bookmarks", on_delete=models.DO_NOTHING)
+    film = models.ForeignKey(Film, related_name="bookmarks", on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return f'{self.person.id} - {self.movie_name} - {self.comment}'
+        return f'{self.person} - {self.film} - {self.comment}'
 
     class Meta:
         db_table = 'content"."bookmark'
         verbose_name = _("Закладка")
         verbose_name_plural = _("Закладки")
 
-        constraints = [models.UniqueConstraint(fields=["movie_id", "timecode", "person"], name="movie_timecode_person_idx")]
+        constraints = [models.UniqueConstraint(fields=["film", "timecode", "person"], name="film_timecode_person_idx")]
 
 
 class Favorite(TimeStampedMixin):
-    movie_id = models.UUIDField(_("id фильма"))
-    movie_name = models.TextField(_("Название фильма"))
     person = models.ForeignKey(Person, related_name='favorites', on_delete=models.DO_NOTHING)
+    film = models.ForeignKey(Film, related_name="favorites", on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return f'{self.person.id} - {self.movie_name}'
+        return f'{self.person} - {self.film}'
 
     class Meta:
         db_table = 'content"."favorite'
         verbose_name = _("Любимый фильм")
         verbose_name_plural = _("Любимые фильмы")
 
-        constraints = [models.UniqueConstraint(fields=["movie_id", "person"], name="movie_person_idx")]
+        constraints = [models.UniqueConstraint(fields=["film", "person"], name="film_person_idx")]
 
 
 class FilmReview(UUIDMixin, TimeStampedMixin):
-    movie_id = models.UUIDField(_("id фильма"))
-    movie_name = models.TextField(_("Название фильма"))
     review_text = models.TextField(_("Текст"))
     score = models.IntegerField(_("Оценка"))
     person = models.ForeignKey(Person, related_name='film_reviews', on_delete=models.CASCADE)
+    film = models.ForeignKey(Film, related_name="film_reviews", on_delete=models.DO_NOTHING)
 
     class Meta:
         db_table = 'content"."film_review'
         verbose_name = _("Рецензия")
         verbose_name_plural = _("Рецензии")
 
-        constraints = [models.UniqueConstraint(fields=["movie_id", "person"], name="movies_persons_idx")]
+        constraints = [models.UniqueConstraint(fields=["film", "person"], name="films_persons_idx")]
 
