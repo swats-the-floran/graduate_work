@@ -17,9 +17,16 @@ class FilmRatingModel(BaseUGCModel):
     score: int
 
 
-class ReviewRatingModel(BaseUGCModel):
-    author_id: str
+class ReviewRatingModel(BaseModel):
+    review_id: str
+    user_id: str
     score: int
+
+
+class ReviewAvgRatingModel(BaseModel):
+    review_id: str
+    score: int
+    quantity: int
 
 
 class ReviewModel(BaseUGCModel):
