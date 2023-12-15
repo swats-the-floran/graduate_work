@@ -68,11 +68,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
         ).data
 
     def get_last_favorites(self, person):
-        return FavoriteSerializer(
-            self.context['last_favorites'],
-            many=True,
-            context=self.context,
-        ).data
+        return self.context['last_favorites']
 
     def get_last_film_reviews(self, person):
         return self.context['last_film_reviews']

@@ -10,6 +10,7 @@ from profiles.api.v1.serializers import (
     BookmarkSerializer,
     FavoriteSerializer,
     FilmReviewSerializer,
+    FilmSerializer,
     PersonDetailSerializer,
     PersonSerializer,
 )
@@ -35,6 +36,10 @@ from profiles.utils import StandardResultsSetPagination
         summary='Edit a person',
     ),
     destroy=extend_schema(summary='Delete a person'),
+    detailed=extend_schema(
+        summary='Get detailed person model with last reviews and its likes',
+        responses=PersonDetailSerializer,
+    ),
 )
 class PersonViewSet(viewsets.ModelViewSet):
 
@@ -57,17 +62,40 @@ class PersonViewSet(viewsets.ModelViewSet):
         except Exception:
             return reviews_data
 
+        if not resp.ok:
+            return reviews_data
+
         for review_score in review_scores:
-            review_score['review_id']
             review_data = next(filter(lambda review: review['id'] == review_score['review_id'], reviews_data))  # find review for which we got likes
             review_data.update({'score': review_score['score']})
             review_data.update({'quantity': review_score['quantity']})
 
-            print(review_data)
-
-        print(reviews_data)
-
         return reviews_data
+
+
+    @staticmethod
+    def _get_films_likes(films_data: OrderedDict) -> OrderedDict:
+        film_ratings_endpoint = 'http://ugc_service:8889/api/v1/film_ratings?'
+        params = ''
+        for film in films_data:
+            params += f'film_ids={film["film"]["id"]}&'
+        url = film_ratings_endpoint + params
+
+        try:
+            resp = requests.get(url, timeout=2)
+            film_scores = resp.json()
+        except Exception:
+            return films_data
+
+        if not resp.ok:
+            return films_data
+
+        for film_score in film_scores:
+            film_data = next(filter(lambda film: film['film']['id'] == film_score['movie_id'], films_data))
+            film_data['film'].update({'score': film_score['score']})
+            film_data['film'].update({'quantity': film_score['quantity']})
+
+        return films_data
 
 
     @action(detail=True, url_path='detailed')
@@ -80,11 +108,13 @@ class PersonViewSet(viewsets.ModelViewSet):
         reviews_data = FilmReviewSerializer(reviews, many=True).data
         reviews_data = self._get_reviews_likes(reviews_data)
 
+        favorites_data = FavoriteSerializer(favorites, many=True).data
+        favorites_data = self._get_films_likes(favorites_data)
 
         serializer = PersonDetailSerializer(person, context={
             'request': request,
             'last_bookmarks': bookmarks,
-            'last_favorites': favorites,
+            'last_favorites': favorites_data,
             'last_film_reviews': reviews_data,
         })
 
@@ -160,6 +190,3 @@ class FilmReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return FilmReview.objects.filter(person=self.kwargs['person_pk'])
 
-    # @action(detail=True, url_path='detail', url_name='person-reviews-detail')
-    # def detail(self):
-    #     pass
