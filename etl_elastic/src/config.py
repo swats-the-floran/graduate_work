@@ -16,21 +16,24 @@ class DBConfig(BaseSettings):
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
-class ESConfig(BaseSettings):
+class DBProfile(BaseSettings):
+    db: str = "profiles"
+    user: str = "postgres"
+    password: str = "password"
     host: str = "0.0.0.0"
-    port: int = 9200
+    port: int = 5432
 
     class Config:
-        env_prefix = 'elastic_'
+        env_prefix = 'profile_pg_'
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
 class BaseConfig(BaseSettings):
     db: DBConfig = DBConfig()
-    es: ESConfig = ESConfig()
+    db_profile: DBProfile = DBProfile()
 
 
 settings: BaseConfig = BaseConfig()
