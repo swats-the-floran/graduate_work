@@ -1,4 +1,6 @@
+from typing import OrderedDict
 from drf_spectacular.utils import extend_schema, extend_schema_view
+import requests
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -41,18 +43,49 @@ class PersonViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     # permission_classes = (IsAuthenticated,)
 
+    @staticmethod
+    def _get_reviews_likes(reviews_data: OrderedDict) -> OrderedDict:
+        review_ratings_endpoint = 'http://ugc_service:8889/api/v1/review_ratings?'
+        params = ''
+        for review in reviews_data:
+            params += f'review_ids={review["id"]}&'
+        url = review_ratings_endpoint + params
+
+        try:
+            resp = requests.get(url, timeout=2)
+            review_scores = resp.json()
+        except Exception:
+            return reviews_data
+
+        for review_score in review_scores:
+            review_score['review_id']
+            review_data = next(filter(lambda review: review['id'] == review_score['review_id'], reviews_data))  # find review for which we got likes
+            review_data.update({'score': review_score['score']})
+            review_data.update({'quantity': review_score['quantity']})
+
+            print(review_data)
+
+        print(reviews_data)
+
+        return reviews_data
+
+
     @action(detail=True, url_path='detailed')
     def detailed(self, request, pk=None):
         person = self.get_object()
-        last_bookmarks = Bookmark.objects.filter(person=person).order_by('-created')[:10]
-        last_favorites = Favorite.objects.filter(person=person).order_by('-created')[:10]
-        last_film_reviews = FilmReview.objects.filter(person=person).order_by('-created')[:10]
+        bookmarks = Bookmark.objects.filter(person=person).order_by('-created')[:10]
+        favorites = Favorite.objects.filter(person=person).order_by('-created')[:10]
+        reviews = FilmReview.objects.filter(person=person).order_by('-created')[:10]
+
+        reviews_data = FilmReviewSerializer(reviews, many=True).data
+        reviews_data = self._get_reviews_likes(reviews_data)
+
 
         serializer = PersonDetailSerializer(person, context={
             'request': request,
-            'last_bookmarks': last_bookmarks,
-            'last_favorites': last_favorites,
-            'last_film_reviews': last_film_reviews,
+            'last_bookmarks': bookmarks,
+            'last_favorites': favorites,
+            'last_film_reviews': reviews_data,
         })
 
         return Response(serializer.data)

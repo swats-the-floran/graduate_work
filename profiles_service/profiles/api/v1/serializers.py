@@ -18,12 +18,17 @@ class FilmSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FilmScoreSerializer(FilmSerializer):
+    score = serializers.IntegerField()
+    likes = serializers.IntegerField()
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
     film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = Favorite
-        exclude = ('created', 'modified', )
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
 
 
@@ -32,7 +37,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bookmark
-        exclude = ('created', 'modified', )
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
 
 
@@ -41,8 +46,13 @@ class FilmReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FilmReview
-        exclude = ('created', 'modified', )
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
+
+
+class FilmReviewDetailSerializer(FilmReviewSerializer):
+    score = serializers.FloatField()
+    quantity = serializers.IntegerField()
 
 
 class PersonDetailSerializer(serializers.ModelSerializer):
@@ -65,11 +75,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
         ).data
 
     def get_last_film_reviews(self, person):
-        return FilmReviewSerializer(
-            self.context['last_film_reviews'],
-            many=True,
-            context=self.context,
-        ).data
+        return self.context['last_film_reviews']
 
     class Meta:
         model = Person
