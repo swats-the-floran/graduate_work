@@ -1,9 +1,9 @@
-from typing import Annotated
+from typing import Annotated, List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
-from models.models import FilmRatingModel, SavedDataModel
+from models.models import FilmAvgRatingModel, SavedDataModel
 from services.film_ratings_service import FilmRatingsService, get_service
 from services.auth_service import security_jwt
 
@@ -15,7 +15,7 @@ router = APIRouter()
     response_model=SavedDataModel,
 )
 async def create_film_rating(
-    user: Annotated[dict, Depends(security_jwt)],
+    # user: Annotated[dict, Depends(security_jwt)],
     user_id: UUID,
     movie_id: UUID,
     score: int,
@@ -26,21 +26,21 @@ async def create_film_rating(
 
 @router.get(
     path='',
-    response_model=list[FilmRatingModel],
+    response_model=list[FilmAvgRatingModel],
 )
 async def get_tilm_rating_list(
-    user: Annotated[dict, Depends(security_jwt)],
-    movie_id: UUID,
+    # user: Annotated[dict, Depends(security_jwt)],
+    film_ids: Annotated[List[UUID], Query()],
     service: FilmRatingsService = Depends(get_service),
-) -> list[FilmRatingModel]:
-    return await service.get_list({'movie_id': str(movie_id)})
+) -> list[FilmAvgRatingModel]:
+    return await service.get_list([str(film_id) for film_id in film_ids])
 
 
 @router.delete(
     path='',
 )
 async def film_rating(
-    user: Annotated[dict, Depends(security_jwt)],
+    # user: Annotated[dict, Depends(security_jwt)],
     user_id: UUID,
     movie_id: UUID,
     service: FilmRatingsService = Depends(get_service),
