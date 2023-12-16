@@ -29,6 +29,9 @@ opentelemetry-sdk = "^1.20.0"
 opentelemetry-instrumentation-fastapi = "^0.41b0"
 opentelemetry-exporter-jaeger = "^1.20.0"
 gunicorn = "^21.2.0"
+elasticsearch = "^8.11.1"
+psycopg-binary = "^3.1.15"
+psycopg = "^3.1.15"
 
 [tool.poetry.dev-dependencies]
 pytest = "==7.4.0"

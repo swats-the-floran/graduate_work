@@ -646,6 +646,23 @@ services:
   #   networks:
   #     - vidim
 
+  etl_elastic:
+    build: ../etl_elastic/
+    container_name: 'etl_elastic'
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - vidim
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+
+
+
+
 volumes:
   data_volume:
   profiles_volume:
