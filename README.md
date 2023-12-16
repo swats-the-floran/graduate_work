@@ -1,5 +1,7 @@
 # Проектная работа: диплом
 
+https://github.com/swats-the-floran/graduate_work
+
 1. Перейти в директорию **infra**
     ```shell
     cd infra
