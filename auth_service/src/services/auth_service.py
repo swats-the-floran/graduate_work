@@ -125,7 +125,7 @@ class AuthService:
     async def create_both_tokens(self, authorize: AuthJWT, user_id: str) -> (str, str):
         user = await self._user_repo.get_user_by_id(uuid.UUID(user_id))
         roles = [role.name.value for role in user.roles]
-        access_token = await authorize.create_access_token(subject=user_id, user_claims=dict(roles=roles))
+        access_token = await authorize.create_access_token(subject=user_id, user_claims=dict(roles=roles, email=user.email))
         access_jti = await authorize.get_jti(access_token)
 
         refresh_token = await authorize.create_refresh_token(

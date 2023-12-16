@@ -18,30 +18,63 @@ class FilmSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FilmScoreSerializer(FilmSerializer):
+    score = serializers.IntegerField()
+    likes = serializers.IntegerField()
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
-    films = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = Favorite
-        fields = '__all__'
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
-    silms = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = Bookmark
-        fields = '__all__'
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
 
 
 class FilmReviewSerializer(serializers.ModelSerializer):
-    films = FilmSerializer(many=True, read_only=True)
+    film = FilmSerializer(many=False, read_only=True)
 
     class Meta:
         model = FilmReview
-        fields = '__all__'
+        exclude = ('created', 'modified')
         read_only_fields = ('id', 'person')
 
+
+class FilmReviewDetailSerializer(FilmReviewSerializer):
+    score = serializers.FloatField()
+    quantity = serializers.IntegerField()
+
+
+class PersonDetailSerializer(serializers.ModelSerializer):
+    last_bookmarks = serializers.SerializerMethodField()
+    last_favorites = serializers.SerializerMethodField()
+    last_film_reviews = serializers.SerializerMethodField()
+
+    def get_last_bookmarks(self, person):
+        return BookmarkSerializer(
+            self.context['last_bookmarks'],
+            many=True,
+            context=self.context,
+        ).data
+
+    def get_last_favorites(self, person):
+        return self.context['last_favorites']
+
+    def get_last_film_reviews(self, person):
+        return self.context['last_film_reviews']
+
+    class Meta:
+        model = Person
+        read_only_fields = ('id',)
+        exclude = ('password',)
 
