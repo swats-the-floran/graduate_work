@@ -23,6 +23,7 @@ from profiles.models import (
     Person,
 )
 from profiles.utils import StandardResultsSetPagination
+from profiles.config import settings
 
 from rest_framework.authentication import get_authorization_header
 from rest_framework.permissions import BasePermission
@@ -86,7 +87,6 @@ class IsAuthenticated(BasePermission):
     ),
 )
 class PersonViewSet(viewsets.ModelViewSet):
-
     queryset = Person.objects.all().filter(is_active=True)
     serializer_class = PersonSerializer
     pagination_class = StandardResultsSetPagination
@@ -94,11 +94,11 @@ class PersonViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _get_reviews_likes(reviews_data: OrderedDict) -> OrderedDict:
-        review_ratings_endpoint = 'http://ugc_service:8889/api/v1/review_ratings?'
+
         params = ''
         for review in reviews_data:
             params += f'review_ids={review["id"]}&'
-        url = review_ratings_endpoint + params
+        url = settings.url + params
 
         try:
             resp = requests.get(url, timeout=2)
@@ -110,12 +110,12 @@ class PersonViewSet(viewsets.ModelViewSet):
             return reviews_data
 
         for review_score in review_scores:
-            review_data = next(filter(lambda review: review['id'] == review_score['review_id'], reviews_data))  # find review for which we got likes
+            review_data = next(filter(lambda review: review['id'] == review_score['review_id'],
+                                      reviews_data))  # find review for which we got likes
             review_data.update({'score': review_score['score']})
             review_data.update({'quantity': review_score['quantity']})
 
         return reviews_data
-
 
     @staticmethod
     def _get_films_likes(films_data: OrderedDict) -> OrderedDict:
@@ -140,7 +140,6 @@ class PersonViewSet(viewsets.ModelViewSet):
             film_data['film'].update({'quantity': film_score['quantity']})
 
         return films_data
-
 
     @action(detail=True, url_path='detailed')
     def detailed(self, request, pk=None):
@@ -177,7 +176,6 @@ class PersonViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(summary='Delete user\'s bookmark'),
 )
 class BookmarkViewSet(viewsets.ModelViewSet):
-
     serializer_class = BookmarkSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = (IsAuthenticated,)
@@ -198,7 +196,6 @@ class BookmarkViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(summary='Delete user\'s favorite movie record'),
 )
 class FavoriteViewSet(viewsets.ModelViewSet):
-
     serializer_class = FavoriteSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = (IsAuthenticated,)
@@ -226,11 +223,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     ),
 )
 class FilmReviewViewSet(viewsets.ModelViewSet):
-
     serializer_class = FilmReviewSerializer
     pagination_class = StandardResultsSetPagination
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         return FilmReview.objects.filter(person=self.kwargs['person_pk'])
-
