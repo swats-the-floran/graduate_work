@@ -23,6 +23,10 @@ class BaseConfig(BaseSettings):
 
     sentry_dsn: str = "https://e24a3aedb026bfac6a3aa05ca67e919a@o4506173799727104.ingest.sentry.io/4506173902618624"
 
+    @property
+    def url_auth_me(self):
+        return f'http://{self.auth_host}:{self.auth_port}/api/v1/auth/me?'
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

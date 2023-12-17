@@ -42,8 +42,6 @@ class ProfileServiceConfig(BaseSettings):
 
 class BaseConfig(BaseSettings):
     project_name: str = Field(env="PROJECT_NAME", default="auth_service")
-    host: str = Field(env="AUTH_HOST", default="0.0.0.0")
-    port: int = Field(env="AUTH_PORT", default="6000")
 
     sentry_dsn: str = "https://e24a3aedb026bfac6a3aa05ca67e919a@o4506173799727104.ingest.sentry.io/4506173902618624"
 
@@ -56,6 +54,11 @@ class BaseConfig(BaseSettings):
     db: DBConfig = DBConfig()
     redis_db: RedisConfig = RedisConfig()
     profile: ProfileServiceConfig = ProfileServiceConfig()
+
+    @property
+    def url_auth_me(self):
+        return f'http://{self.host}:{self.port}/api/v1/auth/me?'
+
 
 
 settings: BaseConfig = BaseConfig()

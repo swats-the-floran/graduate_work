@@ -32,6 +32,7 @@ gunicorn = "^21.2.0"
 elasticsearch = "^8.11.1"
 psycopg-binary = "^3.1.15"
 psycopg = "^3.1.15"
+djangorestframework = "^3.14.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "==7.4.0"

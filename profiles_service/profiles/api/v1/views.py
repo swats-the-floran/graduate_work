@@ -28,6 +28,8 @@ from profiles.config import settings
 from rest_framework.authentication import get_authorization_header
 from rest_framework.permissions import BasePermission
 
+RESULT_COUNT = 10
+
 
 class IsAuthenticated(BasePermission):
 
@@ -54,7 +56,7 @@ class IsAuthenticated(BasePermission):
             'Authorization': f'Bearer {token}',
             'X-Request-Id': str(uuid.uuid4()),
         }
-        resp = requests.get('http://auth_service:8080/api/v1/auth/me', headers=headers)
+        resp = requests.get(settings.auth.url_auth_me, headers=headers)
 
         if not resp.ok:
             return False
@@ -119,11 +121,10 @@ class PersonViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _get_films_likes(films_data: OrderedDict) -> OrderedDict:
-        film_ratings_endpoint = 'http://ugc_service:8889/api/v1/film_ratings?'
         params = ''
         for film in films_data:
             params += f'film_ids={film["film"]["id"]}&'
-        url = film_ratings_endpoint + params
+        url = settings.ugc.url_film_ratings + params
 
         try:
             resp = requests.get(url, timeout=2)
@@ -144,9 +145,9 @@ class PersonViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path='detailed')
     def detailed(self, request, pk=None):
         person = self.get_object()
-        bookmarks = Bookmark.objects.filter(person=person).order_by('-created')[:10]
-        favorites = Favorite.objects.filter(person=person).order_by('-created')[:10]
-        reviews = FilmReview.objects.filter(person=person).order_by('-created')[:10]
+        bookmarks = Bookmark.objects.filter(person=person).order_by('-created')[:RESULT_COUNT]
+        favorites = Favorite.objects.filter(person=person).order_by('-created')[:RESULT_COUNT]
+        reviews = FilmReview.objects.filter(person=person).order_by('-created')[:RESULT_COUNT]
 
         reviews_data = FilmReviewSerializer(reviews, many=True).data
         reviews_data = self._get_reviews_likes(reviews_data)

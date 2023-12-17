@@ -4,6 +4,7 @@ from time import sleep
 from clickhouse_driver import Client
 from kafka import KafkaConsumer
 
+MAX_RECORD_COUNT = 10000
 
 clickhouse_client = Client(host='clickhouse-node1')
 CLICKHOUSE_DB_NAME = 'movies'
@@ -34,12 +35,12 @@ def load_messages():
     messages = []
 
     while True:
-        batch = kafka_consumer.poll(max_records=10000)
+        batch = kafka_consumer.poll(max_records=MAX_RECORD_COUNT)
         values = batch.values()
         for consumer_record in values:
             for message in consumer_record:
                 messages.append(message)
-                if len(messages) == 10000:
+                if len(messages) == MAX_RECORD_COUNT:
                     query_string = get_query(messages)
                     if not query_string:
                         continue

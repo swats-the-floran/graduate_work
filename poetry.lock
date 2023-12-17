@@ -469,6 +469,41 @@ wrapt = ">=1.10,<2"
 dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
+name = "django"
+version = "5.0"
+description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "Django-5.0-py3-none-any.whl", hash = "sha256:3a9fd52b8dbeae335ddf4a9dfa6c6a0853a1122f1fb071a8d5eca979f73a05c8"},
+    {file = "Django-5.0.tar.gz", hash = "sha256:7d29e14dfbc19cb6a95a4bd669edbde11f5d4c6a71fdaa42c2d40b6846e807f7"},
+]
+
+[package.dependencies]
+asgiref = ">=3.7.0"
+sqlparse = ">=0.3.1"
+tzdata = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+argon2 = ["argon2-cffi (>=19.1.0)"]
+bcrypt = ["bcrypt"]
+
+[[package]]
+name = "djangorestframework"
+version = "3.14.0"
+description = "Web APIs for Django, made easy."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "djangorestframework-3.14.0-py3-none-any.whl", hash = "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08"},
+    {file = "djangorestframework-3.14.0.tar.gz", hash = "sha256:579a333e6256b09489cbe0a067e66abe55c6595d8926be6b99423786334350c8"},
+]
+
+[package.dependencies]
+django = ">=3.0"
+pytz = "*"
+
+[[package]]
 name = "dnspython"
 version = "2.4.2"
 description = "DNS toolkit"
@@ -1369,7 +1404,7 @@ name = "psycopg-binary"
 version = "3.1.15"
 description = "PostgreSQL database adapter for Python -- C optimisation distribution"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
     {file = "psycopg_binary-3.1.15-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:12417e4aade7549c25d34d3f256c006713db81877b44934d50afa81e11f2fce5"},
     {file = "psycopg_binary-3.1.15-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7e891f8d5e935c805ccf9acb5a012a3fd7032724d35022e4eba72babbd24003b"},
@@ -1436,17 +1471,6 @@ files = [
     {file = "psycopg_binary-3.1.15-cp39-cp39-musllinux_1_1_ppc64le.whl", hash = "sha256:699a14733709f0c08b7d4fe32abd1d0fbb67ae58675ec7d0512048bd6eadeab4"},
     {file = "psycopg_binary-3.1.15-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:4b51b3d8b955585c6fc3e3d90b09f4e481e47e28a6486c2fbad7866ddb6a5868"},
     {file = "psycopg_binary-3.1.15-cp39-cp39-win_amd64.whl", hash = "sha256:361b0a0697b582ff019a15590063c1065f109ae207c0374f297926d5b359012b"},
-    {file = "protobuf-4.25.1-cp310-abi3-win32.whl", hash = "sha256:193f50a6ab78a970c9b4f148e7c750cfde64f59815e86f686c22e26b4fe01ce7"},
-    {file = "protobuf-4.25.1-cp310-abi3-win_amd64.whl", hash = "sha256:3497c1af9f2526962f09329fd61a36566305e6c72da2590ae0d7d1322818843b"},
-    {file = "protobuf-4.25.1-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:0bf384e75b92c42830c0a679b0cd4d6e2b36ae0cf3dbb1e1dfdda48a244f4bcd"},
-    {file = "protobuf-4.25.1-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:0f881b589ff449bf0b931a711926e9ddaad3b35089cc039ce1af50b21a4ae8cb"},
-    {file = "protobuf-4.25.1-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:ca37bf6a6d0046272c152eea90d2e4ef34593aaa32e8873fc14c16440f22d4b7"},
-    {file = "protobuf-4.25.1-cp38-cp38-win32.whl", hash = "sha256:abc0525ae2689a8000837729eef7883b9391cd6aa7950249dcf5a4ede230d5dd"},
-    {file = "protobuf-4.25.1-cp38-cp38-win_amd64.whl", hash = "sha256:1484f9e692091450e7edf418c939e15bfc8fc68856e36ce399aed6889dae8bb0"},
-    {file = "protobuf-4.25.1-cp39-cp39-win32.whl", hash = "sha256:8bdbeaddaac52d15c6dce38c71b03038ef7772b977847eb6d374fc86636fa510"},
-    {file = "protobuf-4.25.1-cp39-cp39-win_amd64.whl", hash = "sha256:becc576b7e6b553d22cbdf418686ee4daa443d7217999125c045ad56322dda10"},
-    {file = "protobuf-4.25.1-py3-none-any.whl", hash = "sha256:a19731d5e83ae4737bb2a089605e636077ac001d18781b3cf489b9546c7c80d6"},
-    {file = "protobuf-4.25.1.tar.gz", hash = "sha256:57d65074b4f5baa4ab5da1605c02be90ac20c8b40fb137d6a8df9f416b0d0ce2"},
 ]
 
 [[package]]
@@ -1741,6 +1765,17 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "pytz"
+version = "2023.3.post1"
+description = "World timezone definitions, modern and historical"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytz-2023.3.post1-py2.py3-none-any.whl", hash = "sha256:ce42d816b81b68506614c11e8937d3aa9e41007ceb50bfdcb0749b921bf646c7"},
+    {file = "pytz-2023.3.post1.tar.gz", hash = "sha256:7b4fddbeb94a1eba4b557da24f19fdf9db575192544270a9101d8509f9f43d7b"},
+]
+
+[[package]]
 name = "redis"
 version = "4.6.0"
 description = "Python client for Redis database and key-value store"
@@ -1890,6 +1925,22 @@ postgresql-psycopg2cffi = ["psycopg2cffi"]
 postgresql-psycopgbinary = ["psycopg[binary] (>=3.0.7)"]
 pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3-binary"]
+
+[[package]]
+name = "sqlparse"
+version = "0.4.4"
+description = "A non-validating SQL parser."
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "sqlparse-0.4.4-py3-none-any.whl", hash = "sha256:5430a4fe2ac7d0f93e66f1efc6e1338a41884b7ddf2a350cedd20ccc4d9d28f3"},
+    {file = "sqlparse-0.4.4.tar.gz", hash = "sha256:d446183e84b8349fa3061f0fe7f06ca94ba65b426946ffebe6e3e8295332420c"},
+]
+
+[package.extras]
+dev = ["build", "flake8"]
+doc = ["sphinx"]
+test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "starlette"
@@ -2128,4 +2179,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "10b1ec0fc260db76b912a963dc33daaa6e2571e3011b1571f168b6173a129316"
+content-hash = "baa3e12b5ccdbbf925f6bdb9b0f02f86f5aad4b769e14ac4b4197095f694212d"

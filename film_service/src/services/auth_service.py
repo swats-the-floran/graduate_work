@@ -44,7 +44,7 @@ class JWTBearer(HTTPBearer):
                 'X-Request-Id': str(uuid.uuid4())
             }
             async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(url='http://auth_service:8080/api/v1/auth/me') as status:
+                async with session.get(url=settings.url_auth_me) as status:
                     response = await status.json()
                     status_code = status.status
                     if status_code != st.HTTP_200_OK:
