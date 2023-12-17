@@ -34,7 +34,7 @@ class IsAuthenticated(BasePermission):
     def has_permission(self, request, view):
         # TODO: exceptions with messages
 
-        #if endpoint does not require user id, there is no need for permission
+        # if endpoint does not require user id, there is no need for permission
         path = request.get_full_path()
         person_pk = re.search('[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', path)
         if person_pk is None:
