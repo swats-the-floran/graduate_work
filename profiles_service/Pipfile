@@ -17,6 +17,9 @@ drf-spectacular = "==0.26.5"
 drf-nested-routers = "==0.93.4"
 PyJWT = "==2.8.0"
 pydantic-settings = "==2.0.3"
+pytest = "*"
+pytest-django = "*"
+pytest-mock = "*"
 
 [dev-packages]
 pytest = "==6.2.5"
