@@ -1,5 +1,8 @@
-from profiles.api.v1.serializers import (ProfileCreateOrUpdateSerializer,
-                                         FavoriteSerializer)
+from profiles.api.v1.serializers import (
+    ProfileCreateOrUpdateSerializer,
+    FavoriteSerializer
+)
+
 
 class PersonService:
     @staticmethod
